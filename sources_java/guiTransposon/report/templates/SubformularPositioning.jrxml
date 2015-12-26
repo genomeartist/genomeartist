@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<jasperReport  xmlns="http://jasperreports.sourceforge.net/jasperreports"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+		name="TableReport" pageWidth="555" pageHeight="842" columnWidth="555"
+                leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true">
+	<property name="net.sf.jasperreports.export.pdf.tagged" value="false"/>
+	<property name="net.sf.jasperreports.export.pdf.compressed" value="false"/>
+	<property name="net.sf.jasperreports.export.pdf.force.svg.shapes" value="true"/>
+	<style name="Sans_Normal" isDefault="true" fontName="DejaVu Sans" fontSize="10"
+                 isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+
+
+        <!-- Se definesc variabile -->
+	<field name="sub_image" class="java.awt.Image" />
+	
+	<columnHeader>
+                <!-- Primul rand -->
+		<band height="25">
+			<textField isStretchWithOverflow="true">
+				<reportElement mode="Opaque" x="0" y="10" width="555" height="15" backcolor="white" 
+					stretchType="RelativeToTallestObject" />
+				<box padding="2">
+					<pen lineColor="black"/>
+					<topPen lineWidth="1"/>
+                                        <leftPen lineWidth="1"/>
+					<bottomPen lineWidth="1"/>
+                                        <rightPen lineWidth="1"/>
+				</box>
+				<textElement verticalAlignment="Middle"
+                                    textAlignment="Center">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Gene Map"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="60" splitType="Immediate">
+		<frame>
+			<reportElement x="0" y="0" width="555" height="60" />
+                        <!-- Sigla companiei -->
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Top">
+				<reportElement x="0" y="0" width="555" height="60"/>
+				<graphicElement/>
+				<imageExpression class="java.awt.Image"><![CDATA[$F{sub_image}]]></imageExpression>
+			</image>
+		</frame>
+		</band>
+	</detail>
+</jasperReport>

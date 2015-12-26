@@ -1,0 +1,267 @@
+<project name="genomeARTIST" basedir="." default="all">
+
+    <!-- ~~~~~~~~Release names~~~~~~~~~~~~ -->
+    <property name="release.dir" value="release"/>
+    <property name="genomeless.dir" value="genomeless"/>
+    <property name="genomeless.index.file" value="${genomeless.dir}/paramsIndexFisiere.txt"/>
+
+    <property name="temp.dir" value="temp"/>
+    <property name="obfuscator.jar" value="proguard.jar"/>
+    <property name="obfuscator.config" value="applications.pro"/>
+    
+    <property name="project.jar" value="artist_temp.jar"/>
+    <property name="gARTIST.jar" value="genomeARTIST.jar"/>
+    <property name="main.classname" value="ro.genomeartist.gui.Main"/>
+    
+    <!-- ~~~~~~~~ Java names~~~~~~~~~~~~ -->
+    <property name="sources_java.dir" value="../sources_java"/>
+    <property name="components.dir" value="${sources_java.dir}/Components"/>
+    <property name="gui.dir" value="${sources_java.dir}/guiTransposon"/>
+
+     <!-- ~~~~~~~~Gui names~~~~~~~~~~~~ -->
+    <property name="gui.jar" value="guiTransposon.jar"/>
+    <property name="gui.dist.dir" value="${gui.dir}/dist"/>
+    <property name="gui.lib.dir" value="${gui.dir}/dist/lib"/>
+    <property name="gui.reports.src"
+      value="${gui.dir}/src/ro/genomeartist/gui/reports/compile/JCompileAllReportsByFolder.java"/>
+    <property name="gui.report.main" value="ro.genomeartist.gui.reports.compile.JCompileAllReportsByFolder"/>
+    <property name="gui.report.jar" value="report-compiler.jar"/>
+    <property name="gui.report.templates" value="${release.dir}/report/templates"/>
+    <property name="gui.report.compiled" value="${release.dir}/report/compiled"/>
+    <property name="gui.splash" value="images/branding/splash.png"/>
+
+    <!-- ~~~~~~~~Documentation~~~~~~~~~~~~ -->
+    <property name="docs.readme" value="../documentation/README.txt"/>
+    <property name="docs.manual" value="../documentation/Manual.pdf"/>
+    <property name="docs.license" value="../documentation/COPYING.txt"/>
+
+    <!-- ~~~~~~~~Script~~~~~~~~~~~~ -->
+    <property name="script.file" value="Genome-ARTIST.sh"/>
+    <property name="script.cache.clean" value="cacheClean.sh"/>
+    <property name="script.cache.load" value="cachePreloadGenomes.sh"/>
+
+    <!-- ~~~~~~~~Server names~~~~~~~~~~~~ -->
+    <property name="server.dir" value="../sources_c/"/>
+    <property name="server.cleaner" value="cleaner"/>
+    <property name="server.client" value="client"/>
+    <property name="server.datahash" value="data_hashing_utility"/>
+    <property name="server.expansion" value="run_expansion_generation"/>
+    <property name="server.server" value="server"/>
+
+    <!-- ~~~~~~~~Resources names~~~~~~~~~~~~ -->
+    <property name="resources.dir.name" value="resources"/>
+    <property name="resources.dir" value="../${resources.dir.name}"/>
+    
+    <!-- ~~~~~~~~Scripts names~~~~~~~~~~~~ -->
+    <property name="scripts.dir.name" value="scripts"/>
+    <property name="scripts.dir" value="../${scripts.dir.name}"/>
+
+    <!-- ~~~~~~~~PAths~~~~~~~~~~~~ -->
+    <path id="classpath">
+        <!-- Gui lib -->
+        <fileset dir="${gui.lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <path id="includelibs">
+        <!-- Release lib -->
+        <fileset dir="${release.dir}/lib" includes="**/*.jar"/>
+    </path>
+
+
+    <!-- ~~~~~~~Sterge folderul release~~~~~~~~~~~~ -->
+    <target name="clean">
+        <delete dir="${release.dir}"/>
+        <delete dir="${genomeless.dir}"/>
+    </target>
+
+    <!-- ~~~~~~~~Compileaza subproiectele~~~~~~~~~~~~ -->
+    <target name="compile-subprojects">
+        <ant antfile="${components.dir}/build.xml" target="clean" inheritAll="false"/>
+        <ant antfile="${components.dir}/build.xml"  target="jar" inheritAll="false"/>
+        <ant antfile="${gui.dir}/build.xml" target="clean" inheritAll="false"/>
+        <ant antfile="${gui.dir}/build.xml" target="jar" inheritAll="false"/>
+    </target>
+
+    <!-- ~~~~~~~~Fa versiunea de release~~~~~~~~~~~~ -->
+    <target name="release">
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--  clean and build subprojects -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <antcall target="compile-subprojects"/>
+
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--   copy files to release dir -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!-- copy jars -->
+        <mkdir dir="${release.dir}"/>
+        <mkdir dir="${release.dir}/${temp.dir}"/>
+        <copy todir="${release.dir}/${temp.dir}">
+            <fileset dir="${gui.dist.dir}"/>
+        </copy>
+        <!-- report templates -->
+        <mkdir dir="${release.dir}/report"/>
+        <copy todir="${release.dir}/report">
+            <fileset dir="${gui.dir}/report"/>
+        </copy>
+        <!-- Copy the config file -->
+        <copy todir="${release.dir}">
+            <fileset file="${gui.dir}/config.txt"/>
+            <fileset file="${server.dir}/paramsIndexFisiere.txt"/>
+            <fileset file="${gui.dir}/paramsInterface.txt"/>
+            <fileset file="${server.dir}/paramsServer.txt"/>
+        </copy>
+        <!-- Copy the genomes -->
+        <mkdir dir="${release.dir}/${resources.dir.name}"/>
+        <copy todir="${release.dir}/${resources.dir.name}">
+            <fileset dir="${resources.dir}" excludes="**/*svn*"/>
+        </copy>
+        <delete dir="${release.dir}/${resources.dir.name}/outputs"/>
+        <mkdir dir="${release.dir}/${resources.dir.name}/outputs"/>
+        <!-- Copy the server -->
+        <copy file="${server.dir}/${server.cleaner}" todir="${release.dir}"/>
+        <copy file="${server.dir}/${server.client}" todir="${release.dir}"/>
+        <copy file="${server.dir}/${server.datahash}" todir="${release.dir}"/>
+        <copy file="${server.dir}/${server.expansion}" todir="${release.dir}"/>
+        <copy file="${server.dir}/${server.server}" todir="${release.dir}"/>
+        <copy file="${script.file}" todir="${release.dir}"/>
+        <copy file="${script.cache.clean}" todir="${release.dir}"/>
+        <copy file="${script.cache.load}" todir="${release.dir}"/>
+        <chmod file="${release.dir}/${server.cleaner}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${server.client}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${server.datahash}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${server.expansion}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${server.server}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${script.file}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${script.cache.clean}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${script.cache.load}" perm="ugo+x"/>
+        <!-- Copy the scripts -->
+        <mkdir dir="${release.dir}/${scripts.dir.name}"/>
+        <copy todir="${release.dir}/${scripts.dir.name}">
+            <fileset dir="${scripts.dir}" excludes="**/*svn*"/>
+        </copy>
+        <!-- Copy the documentation -->
+        <copy file="${docs.readme}" todir="${release.dir}"/>
+	<copy file="${docs.license}" todir="${release.dir}"/>
+        <mkdir dir="${release.dir}/docs"/>
+        <copy file="${docs.manual}" todir="${release.dir}/docs"/>
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--     Compile reports      -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <mkdir dir="${release.dir}/report/src"/>
+        <mkdir dir="${release.dir}/report/classes"/>
+        <copy todir="${release.dir}/report/src">
+            <fileset file="${gui.reports.src}"/>
+        </copy>
+        <javac srcdir="${release.dir}/report/src"
+            destdir="${release.dir}/report/classes" classpathref="classpath"/>
+        <jar destfile="${release.dir}/report/${gui.report.jar}" 
+            basedir="${release.dir}/report/classes">
+            <manifest>
+                <attribute name="Main-Class" value="${gui.report.main}"/>
+            </manifest>
+        </jar>
+        <java fork="true" classname="${gui.report.main}">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${release.dir}/report/${gui.report.jar}"/>
+            </classpath>
+            <arg value="${gui.report.templates}"/>
+            <arg value="${gui.report.compiled}"/>
+        </java>
+        <!-- cleanup report compiler -->
+        <delete dir="${gui.report.templates}"/>
+        <delete dir="${release.dir}/report/classes"/>
+        <delete dir="${release.dir}/report/src"/>
+        <delete file="${release.dir}/report/${gui.report.jar}"/>
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--   Repackage the jars     -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <echo message="packaging up "/>
+        <!-- put library in place -->
+        <copy todir="${release.dir}/lib">
+            <fileset dir="${release.dir}/${temp.dir}/lib"/>
+        </copy>
+         <!-- Package into the final package -->
+        <manifestclasspath property="lib.list" jarfile="${release.dir}/${project.jar}">
+                <classpath refid="includelibs"/>
+        </manifestclasspath>
+        <jar destfile="${release.dir}/${project.jar}" filesetmanifest="skip">
+            <zipfileset src="${release.dir}/${temp.dir}/${gui.jar}"/>
+            <manifest>
+                <attribute name="Class-Path" value="${lib.list}"/>
+                <attribute name="Main-Class" value="${main.classname}"/>
+                <attribute name="SplashScreen-Image" value="${gui.splash}"/>
+            </manifest>
+        </jar>
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--   Obfuscate the jar     -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <antcall target="obfuscate"/>
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--   Make a genomeless version     -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <antcall target="strip-release"/>
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--         Cleanup          -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <delete dir="${release.dir}/${temp.dir}"/>
+        <delete file="${release.dir}/${project.jar}"/>
+    </target>
+
+    <!--   Make a genomeless version   -->
+    <target name="strip-release">
+        <delete dir="${genomeless.dir}"/>
+        <mkdir dir="${genomeless.dir}"/>
+        <copy todir="${genomeless.dir}">
+            <fileset dir="${release.dir}" excludes="**/${resources.dir.name}/raw/*,**/${resources.dir.name}/gene/*"/>
+        </copy>
+	
+	 <!--   Make sure we have raw and gene  -->
+	<delete dir="${genomeless.dir}/${resources.dir.name}/raw"/>
+	<mkdir dir="${genomeless.dir}/${resources.dir.name}/raw"/>
+	<delete dir="${genomeless.dir}/${resources.dir.name}/gene"/>
+	<mkdir dir="${genomeless.dir}/${resources.dir.name}/gene"/>
+	
+	<!--   Set the flags and config file  -->
+        <echo file="${genomeless.index.file}" message="#No genomes"/>
+        <chmod file="${genomeless.dir}/${server.cleaner}" perm="ugo+x"/>
+        <chmod file="${genomeless.dir}/${server.client}" perm="ugo+x"/>
+        <chmod file="${genomeless.dir}/${server.datahash}" perm="ugo+x"/>
+        <chmod file="${genomeless.dir}/${server.expansion}" perm="ugo+x"/>
+        <chmod file="${genomeless.dir}/${server.server}" perm="ugo+x"/>
+        <chmod file="${genomeless.dir}/${script.file}" perm="ugo+x"/>
+    </target>
+
+    <!-- Obfuscheaza sursele  -->
+    <target name="obfuscate">
+        <!-- obfuscate sources -->
+        <taskdef resource="proguard/ant/task.properties"
+                 classpath="proguard.jar" />
+        <proguard configuration="applications.pro"/>
+    </target>
+
+    <!--   Run the file    -->
+    <target name="run" depends="release">
+        <java fork="true" classname="${main.classname}" dir="${release.dir}">
+            <classpath>
+                <path location="${release.dir}/${gARTIST.jar}"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!--   Run the file    -->
+    <target name="run-no-deps">
+        <java fork="true" classname="${main.classname}" dir="${release.dir}">
+            <classpath>
+                <path location="${release.dir}/${gARTIST.jar}"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!--   Run the file    -->
+    <target name="genomeless" depends="clean,release">
+        <delete dir="${release.dir}"/>
+    </target>
+
+    <target name="all" depends="clean,release"/>
+</project>

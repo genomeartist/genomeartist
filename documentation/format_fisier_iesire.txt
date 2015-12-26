@@ -1,0 +1,78 @@
+### constanta pentru fisiere MAX_INF_STR_LNG = 64
+### constanta pentru fisiere MARIME_CONST_STRING = 128
+
+### POINTERS ###
+int ptrInfoQuery;		//Pointer catre InfoQuery
+int ptrFinalResultSet;  	//Pointer catre setul de rezultate finale
+int ptrPartialResultSet; 	//Pointer catre setul de rezultate partiale
+int ptrBestResult;		//Pointer catre indexul celui mai bun rezultat
+
+### INFO QUERY ### //Informatii despre query
+char[MARIME_CONST_STRING]	queryName;
+int 				querySize;
+char[querySize] 		query;
+int				date;			//numarul de secunde pornind de la EPOCH
+int				timpExecutie;		//numarul de secunde cat a durat executia
+int				finalResultsNumber;
+int				partialResultsNumber;
+
+### FINAL RESULT SET ### //Setul de rezultate finale
+int					finalResultsNumber;
+FinalResultItem[finalResultsNumber]	finalResultSet;
+
+### FINAL RESULT ITEM ### //Un rezultat individual
+int						score;		//Scorul obtinut din aliniere
+int						outTotalLength;	//Marimea stringului de output (aliniere)
+char[outTotalLength]				out1;
+char[outTotalLength]				relation;
+char[outTotalLength]				out2;
+int						intervalMappingNumber; //Numarul de intervale din care este compus rezultatul
+IntervalMappingItem[intervalMappingNumber]	intervalMappingSet;
+
+### INTERVAL MAPPING ITEM ### //Un interval singular
+char[MARIME_CONST_STRING]	fisierOrigine;
+int 				pozitieQuery;
+int				pozitieGenom;
+int				lungimeQuery;
+int				lungimeGenom;
+int				outStringOffset;	//Locatia corespunzatoare in stringul de aliniere
+int				outStringLength;	//Lungimea corespunzatoare pe aliniere
+char				isTransposon;		//1 daca e transposon, 0 daca nu
+char				isComplement;		//1 daca e pe catena complementare, 0 daca nu
+char				insideGeneNumber;	//numarul de gene interioare gasite (ATENTIE ! : limitat la 255 datorita char-ului)
+GENE ITEM[insideGeneNumber]	insideGenesVector;	//doar daca insideGeneNumber > 0
+char 				hasDownstreamGene;
+GENE ITEM			downstreamGene;		//doar daca hasDownStreamGene == 1
+char				hasUpstreamGene;
+GENE ITEM			upstreamGene;		//doar daca hasUpstreamGene == 1
+
+### GENE ITEM ### //Informatii despre o anumita gena
+char[MAX_INF_STR_LNG]		name;			//Numele genei
+char[MARIME_CONST_STRING]	fisierOrigine;		//Fisierul in care se afla
+int				start_position;		//Startul genei
+int				end_position;		//Sfarsitul genei
+char[MAX_INF_STR_LNG]		cyto;			//Cytogenetic map
+char[MAX_INF_STR_LNG]		geneId;			//Pentru drosophila, Flybase id
+int				direction;		//directia : F(+) sau R(-)
+
+### PARTIAL RESULT SET ###	//Setul de rezultate partiale
+int					partialResultsNumber;
+PartialResultItem[partialResultsNumber]	partialResultSet;
+
+### PARTIAL RESULT ITEM ###
+char[MARIME_CONST_STRING]	fisierOrigine;		//nume fisier origine
+int 				pozitieQuery;		//pozitia in query
+int				pozitieGenom;		//pozitia in genom
+int				lungimeQuery;		//lungimea acoperita pe query
+int				lungimeGenom;		//lungimea acoperita pe genom
+int 				scor;			//scorul
+int				outLength;		//Lungimea stringului aliniere
+char[outLength]			out1;			//alinierea (partea de query)
+char[outLength]			relation;		//relatia
+char[outLength]			out2;			//alinierea (partea de genom)
+char				isTransposon;		//1 daca e transposon, 0 daca nu
+char				isComplement;		//1 daca e pe catena complementare, 0 daca nu
+
+### BEST RESULT ###
+int		bestResult;		//Indexul celui mai bun rezultat din FINAL RESULT SET
+

@@ -1,0 +1,110 @@
+#=================================================
+#   Caile catre engine-ul aplicatiei
+#=================================================
+serverFile = ./server
+clientFile = ./client
+cleanerFile = ./cleaner
+hashingFile = ./data_hashing_utility
+expansionFile = ./run_expansion_generation
+stopWordServer = serverok
+stopWordClient = clientok
+#=================================================
+#   Fisiere de parametrii
+#=================================================
+PARAM_FISIERE = ./paramsIndexFisiere.txt
+PARAM_SERVER = ./paramsServer.txt
+#=================================================
+#   Locatiile de resurse
+#=================================================
+FOLDER_RAW = ./resources/raw/
+FOLDER_GENE = ./resources/gene/
+FOLDER_OUTPUTS = ./resources/outputs/
+EXPANSION_TABLE_FILE = ./resources/expansion_table.bin
+#====================================================
+#      Locatiile template-urilor compilate pentru formulare
+#	Relative la cale de executie (in afara .jar)
+#====================================================
+JASPER_COMPILED_FOLDER = ./report/compiled/
+JASPER_COMPILED_RESULT_REPORT = ResultReport.jasper
+JASPER_COMPILED_SUB_QUERY = SubformularQuery.jasper
+JASPER_COMPILED_SUB_MAPPING = SubformularMapping.jasper
+JASPER_COMPILED_SUB_SMITH_WATERMAN = SubformularSmithWaterman.jasper
+JASPER_COMPILED_SUB_POSITIONING = SubformularPositioning.jasper
+JASPER_COMPILED_SUB_GENES = SubformularGenes.jasper
+#====================================================
+#      Locatiile template-urilor pentru formulare
+#	Relative la cale de executie (in afara .jar)
+#====================================================
+JASPER_TEMPLATE_FOLDER = ./report/templates/
+JASPER_TEMPLATE_RESULT_REPORT = ResultReport.jrxml
+JASPER_TEMPLATE_SUB_QUERY = SubformularQuery.jrxml
+JASPER_TEMPLATE_SUB_MAPPING = SubformularMapping.jrxml
+JASPER_TEMPLATE_SUB_SMITH_WATERMAN = SubformularSmithWaterman.jrxml
+JASPER_TEMPLATE_SUB_POSITIONING = SubformularPositioning.jrxml
+JASPER_TEMPLATE_SUB_GENES = SubformularGenes.jrxml
+#=================================================
+#      Locatiile icoanelor pentru JasperViewer
+#	  Relative la classPath (incluse in .jar)
+#=================================================
+JASPER_ICONS_FOLDER = /images/report_viewer/
+JASPER_ICONS_SAVE = save.GIF
+JASPER_ICONS_PRINT = print.GIF
+JASPER_ICONS_RELOAD = reload.GIF
+JASPER_ICONS_FIRST = first.GIF
+JASPER_ICONS_PREVIOUS = previous.GIF
+JASPER_ICONS_NEXT = next.GIF
+JASPER_ICONS_LAST = last.GIF
+JASPER_ICONS_ACTUALSIZE = actualsize.GIF
+JASPER_ICONS_FITPAGE = fitpage.GIF
+JASPER_ICONS_FITWIDTH = fitwidth.GIF
+JASPER_ICONS_ZOOMIN = zoomin.GIF
+JASPER_ICONS_ZOOMOUT = zoomout.GIF
+#=================================================
+#      Locatiile icoanelor pentru header sorter
+#	  Relative la classPath (incluse in .jar)
+#=================================================
+HEADER_SORTER_ICONS_FOLDER = /images/headerSorter/
+HEADER_SORTER_UP = up16.gif
+HEADER_SORTER_DOWN = down16.gif
+#=================================================
+#      Locatiile imaginilor cu sigla
+#	  Relative la classPath (incluse in .jar)
+#=================================================
+BRANDING_FOLDER = /images/branding/
+ARTIST_24 = artist24.gif
+ARTIST_36 = artist36b.png
+LOGO_24 = logo24.png
+LOGO_36 = logo36.png
+LOGO_48 = logo48.png
+LOGO_64 = logo64.png
+#=================================================
+#      Locatiile icoanelor pentru Toolbar
+#	  Relative la classPath (incluse in .jar)
+#=================================================
+TOOLBAR_FEREASTRA_ICONS_FOLDER = /images/toolbar_fereastra/
+TOOLBAR_FEREASTRA_ICONS_LOAD = load24.gif
+TOOLBAR_FEREASTRA_ICONS_SAVE = save24.gif
+TOOLBAR_FEREASTRA_ICONS_SAVEAS = saveas24.gif
+TOOLBAR_FEREASTRA_ICONS_SEARCH = search24.gif
+TOOLBAR_FEREASTRA_ICONS_SETTINGS = settings24.gif
+#==================================================
+#      Locatiile icoanelor pentru butoanele 
+#         din toolbarul pentru Lista Echipamente
+#	  Relative la classPath (incluse in .jar)
+#==================================================
+TOOLBAR_FISIERE_ICONS_FOLDER = /images/toolbar_fisiere/
+TOOLBAR_FISIERE_FOLDER = folder16.gif
+TOOLBAR_FISIERE_CREEAZA = creeaza16.gif
+TOOLBAR_FISIERE_STERGE = sterge16.gif
+TOOLBAR_FISIERE_NEW = new16.gif
+#==================================================
+#      Locatiile icoanelor pentru butoanele 
+#         din toolbarul pentru Lista Echipamente
+#	  Relative la classPath (incluse in .jar)
+#==================================================
+TOOLBAR_FINAL_RESULT_FOLDER = /images/toolbar_final_result/
+TOOLBAR_FINAL_RESULT_EXPORT = export16.gif
+TOOLBAR_FINAL_RESULT_EXPORT_IMAGE = export_image16.gif
+TOOLBAR_FINAL_RESULT_EXPORT_PDF = export_pdf16.gif
+TOOLBAR_FINAL_RESULT_PRINT = print16.gif
+TOOLBAR_FINAL_RESULT_BEST_RESULT = best_result16.gif

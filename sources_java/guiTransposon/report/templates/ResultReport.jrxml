@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<jasperReport  xmlns="http://jasperreports.sourceforge.net/jasperreports"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+		name="TableReport" pageWidth="595" pageHeight="842" columnWidth="555"
+                leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" 
+                whenNoDataType="AllSectionsNoDetail" isFloatColumnFooter="true">
+	<property name="net.sf.jasperreports.export.pdf.tagged" value="false"/>
+	<property name="net.sf.jasperreports.export.pdf.compressed" value="false"/>
+	<property name="net.sf.jasperreports.export.pdf.force.svg.shapes" value="true"/>
+	<style name="Sans_Normal" isDefault="true" fontName="DejaVu Sans" fontSize="10"
+                 isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+
+	<!-- Variabile de pe margine !! -->
+	<parameter name="titlu" class="java.lang.String"/>
+	<parameter name="header_left" class="java.lang.String" />
+	<parameter name="header_right" class="java.lang.String" />
+	<parameter name="footer" class="java.lang.String" />
+	
+        <!-- Se definesc variabile -->
+	<parameter name="queryName" class="java.lang.String" />
+	<parameter name="searchDate" class="java.lang.String" />
+        <parameter name="version" class="java.lang.String" />
+        
+        <!-- Se definesc fieldurile -->
+	<field name="subreport_data" class="net.sf.jasperreports.engine.JRDataSource" />
+	<field name="subreport_engine" class="net.sf.jasperreports.engine.JasperReport" />
+
+	<!-- Se seteaza sectiunea de titlu -->
+        <title>
+		<band height="95">
+                        <!-- HEaderul de pagina -->
+                        <frame>
+                                <reportElement mode="Opaque" x="0" y="0" width="550" height="10" backcolor="white" />
+                                <box>
+                                    <pen lineColor="black"/>
+                                    <bottomPen lineWidth="0.5"/>
+                                </box>
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="0" width="200" height="10" backcolor="white" />
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="8" isBold="true"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA[$P{header_left}]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="350" y="0" width="200" height="10" backcolor="white" />
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Right" >
+                                                <font size="8" isBold="true"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA[$P{header_right}]]></textFieldExpression>
+                                </textField>
+                        </frame>
+                        <!-- Sigla companiei -->
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Top">
+				<reportElement x="390" y="15" width="165" height="40"/>
+				<graphicElement/>
+				<imageExpression class="java.lang.String"><![CDATA["./report/images/logo.png"]]></imageExpression>
+			</image>
+                        <!-- Datele despre cautare -->
+                        <frame>
+                                <reportElement mode="Opaque" x="0" y="15" width="390" height="40" backcolor="white" />
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="0" width="90" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{queryName} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA["Query Name:"]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="90" y="0" width="300" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{queryName} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression class="java.lang.String"><![CDATA[$P{queryName}]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="12" width="90" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{searchDate} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA["Search Date:"]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="90" y="12" width="300" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{searchDate} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression class="java.lang.String"><![CDATA[$P{searchDate}]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="24" width="90" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{version} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA["Version:"]]></textFieldExpression>
+                                </textField>
+                                <textField>
+                                        <reportElement mode="Opaque" x="90" y="24" width="300" height="12" backcolor="white">
+                                            <printWhenExpression><![CDATA[new Boolean($P{version} != null)]]></printWhenExpression>
+                                        </reportElement>
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="10" isBold="false"/>
+                                        </textElement>
+                                        <textFieldExpression class="java.lang.String"><![CDATA[$P{version}]]></textFieldExpression>
+                                </textField>
+                        </frame>
+                        <!-- Titlul raportului -->
+                        <frame>
+                                <reportElement mode="Opaque" x="0" y="55" width="550" height="40" backcolor="white"/>
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="0" width="550" height="40" backcolor="white" />
+                                        <textElement verticalAlignment="Middle"
+                                            textAlignment="Center" >
+                                                <font size="12" isBold="true"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA[$P{titlu}]]></textFieldExpression>
+                                </textField>
+                        </frame>
+		</band>
+	</title>
+        <pageHeader>
+                <band height="20">
+                    <frame>
+                            <reportElement mode="Opaque" x="0" y="0" width="550" height="10" backcolor="white">
+                                <printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
+                            </reportElement>
+                            <box>
+                                    <pen lineColor="black"/>
+                                    <bottomPen lineWidth="0.5"/>
+                            </box>
+                            <textField>
+                                    <reportElement mode="Opaque" x="0" y="0" width="200" height="10" backcolor="white" />
+                                    <textElement verticalAlignment="Bottom"
+                                        textAlignment="Left" >
+                                            <font size="8" isBold="true"/>
+                                    </textElement>
+                                    <textFieldExpression><![CDATA[$P{header_left}]]></textFieldExpression>
+                            </textField>
+                            <textField>
+                                    <reportElement mode="Opaque" x="350" y="0" width="200" height="10" backcolor="white" />
+                                    <textElement verticalAlignment="Bottom"
+                                        textAlignment="Right" >
+                                            <font size="8" isBold="true"/>
+                                    </textElement>
+                                    <textFieldExpression><![CDATA[$P{header_right}]]></textFieldExpression>
+                            </textField>
+                    </frame>
+                </band>
+        </pageHeader>
+	<detail>
+		<band height="10" splitType="Immediate">
+		<frame>
+			<reportElement x="0" y="0" width="555" height="10" stretchType="RelativeToTallestObject" />
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="10"/>
+				<dataSourceExpression><![CDATA[$F{subreport_data}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport">
+					    <![CDATA[$F{subreport_engine}]]></subreportExpression>
+			</subreport>
+		</frame>
+		</band>
+	</detail>
+        <pageFooter>
+                <band height="20">
+                    <frame>
+                            <reportElement mode="Opaque" x="0" y="10" width="550" height="10" backcolor="white" />
+                            <box>
+                                    <pen lineColor="black"/>
+                                    <topPen lineWidth="0.5"/>
+                            </box>
+                            <textField>
+                                    <reportElement mode="Opaque" x="0" y="0" width="200" height="10" backcolor="white" />
+                                    <textElement verticalAlignment="Bottom"
+                                        textAlignment="Left" >
+                                            <font size="8" isBold="true"/>
+                                    </textElement>
+                                    <textFieldExpression><![CDATA[$P{footer}]]></textFieldExpression>
+                            </textField>
+                            <frame>
+                                <reportElement mode="Opaque" x="400" y="0" width="150" height="10" backcolor="white" />
+                                <textField>
+                                        <reportElement mode="Opaque" x="0" y="0" width="130" height="10" backcolor="white" />
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Right" >
+                                                <font size="8" isBold="true"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+                                </textField>
+                                <textField evaluationTime="Report">
+                                        <reportElement mode="Opaque" x="130" y="0" width="20" height="10" backcolor="white" />
+                                        <textElement verticalAlignment="Bottom"
+                                            textAlignment="Left" >
+                                                <font size="8" isBold="true"/>
+                                        </textElement>
+                                        <textFieldExpression><![CDATA[" "+$V{PAGE_NUMBER}]]></textFieldExpression>
+                                </textField>
+                            </frame>
+                    </frame>
+                </band>
+        </pageFooter>
+</jasperReport>

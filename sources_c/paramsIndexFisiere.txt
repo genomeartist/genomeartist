@@ -1,0 +1,9 @@
+# [SEQ PATH]	[GENE PATH]	[GENE NUMBER]	[FILE TITLE]	[GENOM/TRANSPOSON]
+./resources/raw/dmel_2L.raw	./resources/gene/dmel_2L.gene	2763	dmel_2L	G
+./resources/raw/dmel_2R.raw	./resources/gene/dmel_2R.gene	3081	dmel_2R	G
+./resources/raw/dmel_3L.raw	./resources/gene/dmel_3L.gene	2832	dmel_3L	G
+./resources/raw/dmel_3R.raw	./resources/gene/dmel_3R.gene	3509	dmel_3R	G
+./resources/raw/dmel_4.raw	./resources/gene/dmel_4.gene	87	dmel_4	G
+./resources/raw/dmel_U.raw	./resources/gene/dmel_U.gene	149	dmel_U	G
+./resources/raw/dmel_X.raw	./resources/gene/dmel_X.gene	2268	dmel_X	G
+./resources/raw/P{lacW}.raw	./resources/gene/P{lacW}.gene	0	P{lacW}	T
