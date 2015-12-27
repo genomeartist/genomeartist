@@ -9,12 +9,9 @@ To some extent, Genome ARTIST is an alternative for the classical alignment algo
 
 Genome ARTIST is the result of an interdisciplinary collaboration between researchers from the Department of Genetics, University of Bucharest, and computer engineers, graduates of "Politehnica" University of Bucharest, PUB. The authors of the software are Alexandru Al. Ecovoiu, Iulian Constantin Ghionoiu, Andrei Mihai Ciuca and Attila Cristian Ratiu.
 
+<h3> Building Genome ARTIST from sources </h3>
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   Building Genome ARTIST from sources
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-~~~~ Requirements ~~~~
+<h4> Requirements </h4>
 
 To be able to build Genome ARTIST under a UNIX system you need the following tools:
 
@@ -34,7 +31,7 @@ To be able to build Genome ARTIST under a UNIX system you need the following too
 
   $ sudo apt-get install ant
 
-~~~~ Steps to a complete build ~~~~
+<h4> Steps to a complete build </h4>
 
 1. Go to folder "$PROJECT_ROOT/sources_c" and issue the command:
 
@@ -50,6 +47,6 @@ A functional version of Genome ARTIST has been built in the folder "genomeless".
 You can use the "genomeless" version and configure it with your own genomes. 
 For more information about loading genomes, please reffer to the Manual.
 
-~~~~ Starting and configuring Genome ARTIST ~~~
+<h4> Starting and configuring Genome ARTIST </h4>
 
 For information about using Genome ARTIST please check the Manual.pdf located in "$PROJECT_ROOT/documentation/Manual.pdf"
