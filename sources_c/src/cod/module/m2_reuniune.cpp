@@ -172,8 +172,12 @@ void proceseazaPozitie(int fd,int pozitie,char* query,int windowSize,MAPPING_INT
     }
     
     //Eliberez STRUCTURA_HASH
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+    delete rezultat_hash;
+#else
     free(rezultat_hash->vector_pozitii);
     free(rezultat_hash);
+#endif    
   }
 }
 

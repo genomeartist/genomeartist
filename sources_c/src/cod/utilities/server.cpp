@@ -1,8 +1,7 @@
 #ifdef _WIN32
-	#include <windows.h>
-	#include <stdio.h>
+    #include <fcntl.h>
 	#include <io.h>
-	#include <fcntl.h>
+    #include <windows.h>
 #else
 	#include <stdio.h>
 	#include <sys/types.h>
@@ -13,6 +12,7 @@
 	#include <errno.h>
 	#include <unistd.h>
 	#include <sys/stat.h>
+#define O_BINARY 0
 #endif
 
 #include "../../headere/comun.h"
@@ -95,7 +95,7 @@ void test_continut()
 	//}
 }
 
-void release(int marime_totala, int marime_totala_acc)
+void release(long long marime_totala, long long marime_totala_acc)
 {
 	#ifdef _WIN32
 		UnmapViewOfFile(mem);
@@ -121,7 +121,7 @@ void delincheaza()
 	#endif
 }
 
-char* obtine_memorie(const char *nume_zona_memorie, int marime_zona_memorie, int optiune)
+char* obtine_memorie(const char *nume_zona_memorie, long long marime_zona_memorie, int optiune)
 {
 	char *temp_mem;
 	#ifdef _WIN32
@@ -195,6 +195,8 @@ int main(int argc,char *args[])
 {
 	#ifndef _WIN32
 		struct stat informatii_fisier;
+    #else
+	    SharedMemoryKeepAliveService::Stop();
 	#endif
 
 	char nume_fisier_date[MAX_NUME_FISIER];
@@ -203,7 +205,8 @@ int main(int argc,char *args[])
 	char tip_fisier[5];
 	unsigned long nr_inregistrari_acc_total = 0;
 	unsigned long nr_inregistrari_acc = 0;
-	unsigned long marime_totala_acc;
+    long long marime_totala = 0;
+	long long marime_totala_acc;
 	char linie[2*MAX_NUME_FISIER+64];
 	FILE* fisier_intrare_acc;
 	struct INFORMATII_POZITIONARE *informatii_pozitionare;
@@ -215,7 +218,6 @@ int main(int argc,char *args[])
 	unsigned long progress = 0;
 	unsigned long marime_date = 0;
 	struct FISIER_DATE *fisier_date;
-	unsigned long marime_totala = 0;
 	unsigned long offset_curent = 0;
 	char *date = NULL;
 
@@ -277,6 +279,9 @@ int main(int argc,char *args[])
 
 	mem = obtine_memorie(NUME_MEMORIE_PARTAJATA, marime_totala, 0);
 	mem_acc = obtine_memorie(NUME_MEMORIE_PARTAJATA_POZITIONARE, marime_totala_acc, 1);
+#ifdef _WIN32
+	SharedMemoryKeepAliveService::Start();
+#endif
 
 	printf("numar fisiere : %lu\n",numar_fisiere);
 
@@ -316,7 +321,7 @@ int main(int argc,char *args[])
 		sscanf(linie,"%s %s %lu %s %s",nume_fisier_date,nume_fisier_acc,&nr_inregistrari_acc,titlu_fisier,tip_fisier);
 		printf("@info: Loading \"%s\"\n",titlu_fisier);
 		printf("incarc : %s %s %lu %s %s\n",nume_fisier_date,nume_fisier_acc,nr_inregistrari_acc,titlu_fisier,tip_fisier);
-		file_des = open(nume_fisier_date,O_RDONLY);
+		file_des = open(nume_fisier_date,O_RDONLY|O_BINARY);
 		if (file_des == -1 )
 		{
 			fprintf(stderr,"Eroare la deschiderea fisierului '%s' \n",nume_fisier_date);
@@ -443,7 +448,6 @@ int main(int argc,char *args[])
 	printf("serverok\n");
 	#ifdef _WIN32
 		fflush(stdout);
-		getchar();
 	#endif
 
 	//Sleep ca sa pot da comanda pmap `pidof server`;

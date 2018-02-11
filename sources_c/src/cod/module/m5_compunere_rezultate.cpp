@@ -1,8 +1,14 @@
+#ifdef _WIN32
+#include <io.h>
+#include <time.h>
+#else
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#endif
+
 #include "../../headere/m5_compunere_rezultate.h"
 #include "../../headere/structures_aliniere.h"
 #include "../../headere/gene_retrieval.h"

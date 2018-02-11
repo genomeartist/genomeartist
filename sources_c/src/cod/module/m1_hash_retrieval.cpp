@@ -39,7 +39,21 @@ STRUCTURA_HASH* positionsForHash(unsigned int hashVal, int fd)
 		unsigned int numarValori = 0;
 		if ( read(fd, &numarValori, sizeof(unsigned int)) == -1 )
 			return NULL;
-		STRUCTURA_HASH *structura = (STRUCTURA_HASH*)calloc(1, sizeof(STRUCTURA_HASH));
+                
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+		STRUCTURA_HASH *structura = new STRUCTURA_HASH();
+		structura->numar_aparitii = numarValori;
+		unsigned long* positionsArray = new unsigned long[numarValori];
+		if ( read(fd, positionsArray, numarValori * sizeof(unsigned long)) == -1 )
+		{
+			delete positionsArray;
+			delete structura;
+			return NULL;
+		}
+		structura->vector_pozitii.assign(positionsArray, positionsArray+numarValori);
+		delete positionsArray;
+#else
+        STRUCTURA_HASH *structura = (STRUCTURA_HASH*)calloc(1, sizeof(STRUCTURA_HASH));
 		if (structura == NULL)
 			return NULL;
 		structura->numar_aparitii = numarValori;
@@ -55,7 +69,8 @@ STRUCTURA_HASH* positionsForHash(unsigned int hashVal, int fd)
 			free(structura);
 			return NULL;
 		}
-		return structura;
+#endif
+                return structura;
 	}
 	return NULL;
 }

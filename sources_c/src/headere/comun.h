@@ -4,22 +4,28 @@
  *
  * Created on June 21, 2010, 7:52 PM
  */
-
 #ifndef _COMUN_H
 #define	_COMUN_H
 
 #define NUME_MEMORIE_PARTAJATA "/mem_partajata"
 #define NUME_MEMORIE_PARTAJATA_POZITIONARE "/mem_partajata_pozitionare"
+#define SHARED_MEMORY_KEEP_ALIVE_MODULE_NAME "GA_support_service"
 
 //marimea maxima a unui string din structura cu informatii despre gene
 #define MAX_INF_STR_LNG 64
 //marimea maxima pentru numele unui fisier
 #define MARIME_CONST_STRING 128
 
-#define MARIME_STRUCTURA (MARIME_CONST_STRING * sizeof(char) + 2 * MARIME_CONST_STRING * sizeof(char) + MARIME_CONST_STRING * sizeof(char) + 4 * sizeof(unsigned long) + sizeof(int))
-#define MARIME_STRUCTURA_ACC (MAX_INF_STR_LNG * sizeof(char) + MAX_INF_STR_LNG * sizeof(char) + 2 * sizeof(unsigned long) + MAX_INF_STR_LNG * sizeof(char) + sizeof(int) + sizeof(long) + sizeof(int))
+#define MARIME_STRUCTURA (sizeof(FISIER_DATE))
+#define MARIME_STRUCTURA_ACC (sizeof(INFORMATII_POZITIONARE))
 
 #define DIMENSIUNE_FEREASTRA 10
+#define USE_STD_VECTOR_FOR_HASH_POSITIONS
+
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+#include <vector>
+#endif
+
 
 struct FISIER_DATE{
 	char nume_fisier[MARIME_CONST_STRING];
@@ -51,9 +57,27 @@ struct INFORMATII_POZITIONARE{
  *  , se obtine o valoare numerica P, si se acceseaza elementul de la pozitia P din scheletul hash-ului
  */
 struct STRUCTURA_HASH{
-	unsigned int numar_aparitii;
-	unsigned long *vector_pozitii;
+	STRUCTURA_HASH() : numar_aparitii(0)
+	{
+	}
+	unsigned int				numar_aparitii;
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS 
+	std::vector<unsigned long>	vector_pozitii;
+#else
+        unsigned long *vector_pozitii;
+#endif
 };
+
+#ifdef _WIN32
+
+class SharedMemoryKeepAliveService
+{
+public:
+	static void Start();
+	static void Stop();
+};
+
+#endif
 
 #endif	/* _COMUN_H */
 

@@ -1,8 +1,8 @@
 CC = g++
 DEBUG = -g
 PROFILE = -pg
-CFLAGS = -m32 -Wall -W $(DEBUG) $(PROFILE)
-LDFLAGS = -m32 $(PROFILE)
+CFLAGS = -m64 -Wall -W $(DEBUG) $(PROFILE)
+LDFLAGS = -m64 $(PROFILE)
 CALE = ./src/cod
 TARGETS = client server cleaner data_hashing_utility run_expansion_generation run_configuration run_modul1 run_modul2 run_modul3 run_modul4 run_modul3_stitch hash_result_testing
 

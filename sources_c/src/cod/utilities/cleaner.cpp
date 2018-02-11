@@ -20,7 +20,7 @@ int main()
 		shm_unlink(NUME_MEMORIE_PARTAJATA);
 		shm_unlink(NUME_MEMORIE_PARTAJATA_POZITIONARE);
 	#else
-		
+	    SharedMemoryKeepAliveService::Stop();
 	#endif
 	return 0;
 }

@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#else
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -7,6 +11,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#define O_BINARY 0
+#endif
 
 #include "../../headere/utils.h"
 #include "../../headere/comun.h"
@@ -56,7 +62,7 @@ int convert(char x)
 void creazaHashFisier(int file_des, int marime_fereastra, STRUCTURA_HASH *schelet_hash, unsigned int masca_anulare_biti_superiori)
 {
 	unsigned long octeti_cititi;
-	char buffer_citire[BUFFER_SIZE];
+	char* buffer_citire = new char[BUFFER_SIZE];
 	bool prima_data = true;
 	unsigned int hash_curent = 0;
 	unsigned long index_curent = 0;
@@ -72,12 +78,12 @@ void creazaHashFisier(int file_des, int marime_fereastra, STRUCTURA_HASH *schele
 
 	marime_octeti_totala_fisier = lseek(file_des, 0, SEEK_END);
 	lseek(file_des, 0, SEEK_SET);
-	marime_octeti_procent_increment = marime_octeti_totala_fisier / ((valoare_procent_stop-valoare_procent_start) / increment_procent);
+	marime_octeti_procent_increment = marime_octeti_totala_fisier / ((valoare_procent_stop - valoare_procent_start) / increment_procent);
 	offset_octeti_pt_procent_urmator = marime_octeti_procent_increment;
 
 	//ATENTIE : nu tratez cazul in care in fisier se gasesc mai putine caractere decat lungimea unei ferestre
 	//cat timp mai e ceva de citit (in caz ca nu mai sunt octeti de citit returneaza 0) si nu a aparut o eroare (in caza de eroare returneaza -1)
-	while ( (octeti_cititi = read(file_des, buffer_citire, BUFFER_SIZE)) > 0 )
+	while ((octeti_cititi = read(file_des, buffer_citire, BUFFER_SIZE)) > 0)
 	{
 		unsigned int i = 0;
 		if (DEBUG) printf("--------------------------------------------------\n");
@@ -94,16 +100,20 @@ void creazaHashFisier(int file_des, int marime_fereastra, STRUCTURA_HASH *schele
 			for (; i<(unsigned)marime_fereastra; i++)
 			{
 				//mutam toti bitii la stanga cu 2 pozitii
-				hash_curent = hash_curent<<2;
+				hash_curent = hash_curent << 2;
 				//adunam la hash valoarea corespunzatoare nucleotidei curente (fiecare nucleotida este reprezentata pe 2 biti)
 				hash_curent += convert(buffer_citire[i]);
 				index_curent++;
 			}
 
 			schelet_hash[hash_curent].numar_aparitii++;
-			schelet_hash[hash_curent].vector_pozitii = (unsigned long*)realloc(schelet_hash[hash_curent].vector_pozitii, schelet_hash[hash_curent].numar_aparitii * sizeof(unsigned long));
 			//la prima citire, primul hash creat incepe in fisier de pe pozitia 0
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+			schelet_hash[hash_curent].vector_pozitii.push_back(0);
+#else
+                        schelet_hash[hash_curent].vector_pozitii = (unsigned long*)realloc(schelet_hash[hash_curent].vector_pozitii, schelet_hash[hash_curent].numar_aparitii * sizeof(unsigned long));
 			schelet_hash[hash_curent].vector_pozitii[schelet_hash[hash_curent].numar_aparitii-1] = 0;
+#endif
 		}
 
 		for (; i<octeti_cititi; i++)
@@ -119,30 +129,40 @@ void creazaHashFisier(int file_des, int marime_fereastra, STRUCTURA_HASH *schele
 				hash_curent = hash_curent & masca_anulare_biti_superiori;
 
 			schelet_hash[hash_curent].numar_aparitii++;
-			schelet_hash[hash_curent].vector_pozitii = (unsigned long*)realloc(schelet_hash[hash_curent].vector_pozitii, schelet_hash[hash_curent].numar_aparitii * sizeof(unsigned long));
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+			if (schelet_hash[hash_curent].numar_aparitii == 1)
+			{
+				schelet_hash[hash_curent].vector_pozitii.reserve(25);
+			}
+#endif
 			//hash-ul creat incepe de pe pozitia ( index_curent - (marime_fereastra-1) )
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+			schelet_hash[hash_curent].vector_pozitii.push_back(index_curent - (marime_fereastra - 1));
+#else
+      			schelet_hash[hash_curent].vector_pozitii = (unsigned long*)realloc(schelet_hash[hash_curent].vector_pozitii, schelet_hash[hash_curent].numar_aparitii * sizeof(unsigned long));
 			schelet_hash[hash_curent].vector_pozitii[schelet_hash[hash_curent].numar_aparitii-1] = index_curent - (marime_fereastra-1);
-
+#endif
 			index_curent++;
 		}
 
 		offset_octeti_curent += octeti_cititi;
-		if (offset_octeti_curent >= offset_octeti_pt_procent_urmator )
+		if (offset_octeti_curent >= offset_octeti_pt_procent_urmator)
 		{
 			procent_curent += increment_procent;
 			offset_octeti_pt_procent_urmator += marime_octeti_procent_increment;
-			printf("@progress:%ld\n",procent_curent);
+			printf("@progress:%ld\n", procent_curent);
 			fflush(stdout);
 		}
 
 		if (DEBUG) getchar();
 	}
+	delete buffer_citire;
 }
 
-void scrieHash(int fisier_iesire, STRUCTURA_HASH *schelet_hash, unsigned int dimensiune_schelet_hash)
+void scrieHash(FILE* fisier_iesire, STRUCTURA_HASH *schelet_hash, unsigned int dimensiune_schelet_hash)
 {
 	//primul uint din fisier va fi dimensiunea scheletului de hash, pentru a stii cat sa citesc cand deschid fisierul alta data
-	write(fisier_iesire, &dimensiune_schelet_hash, sizeof(unsigned int));
+	fwrite(&dimensiune_schelet_hash, sizeof(unsigned int), 1, fisier_iesire);
 	unsigned int offset_curent = (1+dimensiune_schelet_hash)*sizeof(unsigned int);
 	unsigned int offset_ZERO = 0;
 
@@ -156,22 +176,24 @@ void scrieHash(int fisier_iesire, STRUCTURA_HASH *schelet_hash, unsigned int dim
 	//setand numarul de aparitii peste plafon, nu se va tine cont de aparitiile secventei formata numai din A
 	//(nucleotida A este codata cu 0, deci o succesiune de A, va avea codul 0)
 	schelet_hash[0].numar_aparitii = PLAFON_NR_APARITII + 10;
-	for (unsigned int i=0; i<dimensiune_schelet_hash; i++)
+	for (unsigned int i=0; i<dimensiune_schelet_hash; ++i)
 	{
 		//  daca pentru hash-ul curent exista cel putin 1 aparitie, atunci se asociaza pozitia datelor cu offsetul curent
 		//si se calculeaza offsetul pentru urmatorul se de date
 		//  daca sunt mai mult  de PLAFON_NR_APARITII aparitii, secventa este ignorata
 		if (schelet_hash[i].numar_aparitii > 0 && schelet_hash[i].numar_aparitii <= PLAFON_NR_APARITII)
 		{
-			write(fisier_iesire, &offset_curent, sizeof(unsigned int));
+			fwrite(&offset_curent, sizeof(unsigned int), 1, fisier_iesire);
 			//  offsetul pentru urmatorul set de date este calculat adunand uint-ul pentru marimea setului curent de date
 			//si marimea setului de date curent
+			//offset_curent += 1 * sizeof(unsigned int) + schelet_hash[i].numar_aparitii * sizeof(unsigned long);
 			offset_curent += 1 * sizeof(unsigned int) + schelet_hash[i].numar_aparitii * sizeof(unsigned long);
 		}
 		//daca pentru hashul curent nu exista nici o aparitie, atunci ii este asociat offsetul 0 pentru a indica acest lucru
 		else
 		{
-			write(fisier_iesire, &offset_ZERO, sizeof(unsigned int));
+			fwrite(&offset_ZERO, sizeof(unsigned int), 1, fisier_iesire);
+		
 			//printf("Pentru hash-ul %d nu sunt aparitii\n",i);
 		}
 
@@ -195,20 +217,27 @@ void scrieHash(int fisier_iesire, STRUCTURA_HASH *schelet_hash, unsigned int dim
 	//  offseturile la care se scriu datele vor corespunde cu valorile calculate anterior;
 	//au fost scrise date in dimesiune egala cu (1+dimensiune_schelet_hash)*sizeof(unsigned int)
 	//si fisierul se afla acum exact in pozitia in care se va scrie primul set de date
-	for (unsigned int i=0; i<dimensiune_schelet_hash; i++)
+	for (unsigned int i=0; i<dimensiune_schelet_hash; ++i)
 	{
 		//se scriu date doar daca pentru hash-ul curent sunt aparitii
 		//daca sunt mai mult  de PLAFON_NR_APARITII aparitii, secventa este ignorata
 		if (schelet_hash[i].numar_aparitii > 0 && schelet_hash[i].numar_aparitii <= PLAFON_NR_APARITII)
 		{
 			//se scrie mai intai numarul de aparitii pentru secventa corespunzatoare hash-ului
-			write(fisier_iesire, &(schelet_hash[i].numar_aparitii), sizeof(unsigned int));
-			//si dupaia pozitiile gasite
-			write(fisier_iesire, schelet_hash[i].vector_pozitii, schelet_hash[i].numar_aparitii * sizeof(unsigned long));
+			fwrite(&(schelet_hash[i].numar_aparitii), sizeof(unsigned int), 1, fisier_iesire);
+		
+			//si dupa aceea pozitiile gasite
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+			fwrite(schelet_hash[i].vector_pozitii.data(), sizeof(unsigned long), schelet_hash[i].numar_aparitii, fisier_iesire);
+#else
+                        fwrite(schelet_hash[i].vector_pozitii, sizeof(unsigned long), schelet_hash[i].numar_aparitii, fisier_iesire);
+#endif
 		}
 
+#ifndef USE_STD_VECTOR_FOR_HASH_POSITIONS
 		if (schelet_hash[i].vector_pozitii != NULL)
 			free(schelet_hash[i].vector_pozitii);
+#endif
 
 		if (i > dimensiune_procent_urmator)
 		{
@@ -228,17 +257,29 @@ void proceseazaFisier(char *nume_fisier_date, unsigned int dimensiune_schelet_ha
 {
 	STRUCTURA_HASH *schelet_hash;
 	int file_des;
-	int fisier_iesire;
-
-	//alocam scheletul hash-ului
-	schelet_hash = (STRUCTURA_HASH*)calloc(dimensiune_schelet_hash, sizeof(STRUCTURA_HASH));
+	
+//hash skeleton allocation
+	
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+	try
+	{
+      	        schelet_hash = new STRUCTURA_HASH[dimensiune_schelet_hash];
+	}
+	catch(...)
+	{
+		fprintf(stdout, "Scheletul hash-ului nu poate fi alocat\n");
+		exit(-1);
+	}
+#else
+        schelet_hash = (STRUCTURA_HASH*)calloc(dimensiune_schelet_hash, sizeof(STRUCTURA_HASH));
 	if (schelet_hash == NULL)
 	{
 		fprintf(stdout,"Scheletul hash-ului nu poate fi alocat\n");
 		exit(-1);
 	}
+#endif
 
-	file_des = open(nume_fisier_date,O_RDONLY);
+	file_des = open(nume_fisier_date,O_RDONLY|O_BINARY);
 	if (file_des == -1 )
 	{
 		fprintf(stdout,"Eroare la deschiderea fisierului de date '%s' \n",nume_fisier_date);
@@ -253,8 +294,8 @@ void proceseazaFisier(char *nume_fisier_date, unsigned int dimensiune_schelet_ha
 	close(file_des);
 	
 	char *nume_iesire = nume_fisier_hash(nume_fisier_date);
-	fisier_iesire = open(nume_iesire, O_CREAT | O_TRUNC | O_RDWR, 0666);
-	if (fisier_iesire == -1)
+	FILE* fisier_iesire = fopen(nume_iesire, "wb");
+	if (fisier_iesire == NULL)
 	{
 		fprintf(stdout,"Eroare la deschiderea fisierului de iesire cu numele %s, pentru stocarea hash-ului\n", nume_iesire);
 		fprintf(stderr,"Error operning file \"%s\"\n", nume_iesire);
@@ -264,22 +305,28 @@ void proceseazaFisier(char *nume_fisier_date, unsigned int dimensiune_schelet_ha
 
 	scrieHash(fisier_iesire, schelet_hash, dimensiune_schelet_hash);
 
-	close(fisier_iesire);
-	free(schelet_hash);
+	fclose(fisier_iesire);
+	
+#ifdef USE_STD_VECTOR_FOR_HASH_POSITIONS
+        delete[] schelet_hash;
+#else
+        free(schelet_hash);
+#endif
 }
 
 int main(int argc, char **args)
 {
-	int marime_fereastra;
 	FILE* fisier_intrare;
 	char linie[2*MAX_NUME_FISIER+64];
 	char nume_fisier_date[MAX_NUME_FISIER];
 	char nume_fisier_acc[MAX_NUME_FISIER];
 	unsigned long nr_inregistrari_acc = 0;
 
-	unsigned int masca_anulare_biti_superiori = 0;
+	int marime_fereastra;
+
 	unsigned int dimensiune_schelet_hash = 0;
-	char masca_string[DIMENSIUNE_MASCA_STRING];
+	char masca_string[DIMENSIUNE_MASCA_STRING+1] = "";
+	unsigned int masca_anulare_biti_superiori = 0;
 
 	if (argc < 4)
 	{

@@ -85,6 +85,10 @@ public class MyUtils {
         String s = f.getPath();
         int pos = s.lastIndexOf('.');
         int min = s.lastIndexOf('/');
+        if (min == -1)
+        {
+            min = s.lastIndexOf('\\');
+        }
 
         if (pos > min &&  pos < s.length() - 1) {
             base = s.substring(0, pos);
@@ -103,6 +107,10 @@ public class MyUtils {
         String s = f.getPath();
         int pos = s.lastIndexOf('.');
         int min = s.lastIndexOf('/');
+        if (min == -1)
+        {
+            min = s.lastIndexOf('\\');
+        }
 
         if (pos > min &&  pos < s.length() - 1) {
             base = s.substring(min+1, pos);

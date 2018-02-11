@@ -5,13 +5,16 @@
 #include <string.h>
 #include <errno.h>
 
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
+#ifdef _WIN32
 #include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <windows.h>
+
+#else
+#define O_BINARY 0
+#endif
+
 
 #include "../../headere/comun.h"
 #include "../../headere/utils.h"
@@ -49,15 +52,20 @@
 #define REVERSE 2
 
 //Pointer to the shared memory
+#ifdef _WIN32
+HANDLE mem_h;
+HANDLE ext_mem_h;
+#else
 int mem_h;
 int ext_mem_h;
+#endif
 
 char *mem;
 char *ext_mem;
 
 //Size of the shared memory
-int filesize;
-int ext_filesize;
+long long filesize;
+long long ext_filesize;
 
 //Tipul de output
 int outputType;
@@ -110,35 +118,53 @@ char* my_strrev(char *s)
  */
 void link_memory()
 {
+#ifdef _WIN32
+	mem_h = OpenFileMapping(FILE_MAP_READ,false, NUME_MEMORIE_PARTAJATA);
+	if (mem_h == NULL)
+	{
+		fprintf(stderr, "Eroare la accesarea memoriei partajate\n");
+		exit(-1);
+	}
+	mem = (char*)MapViewOfFile(mem_h, FILE_MAP_READ, 0, 0, 0);
+	DWORD lastError = GetLastError();
+	if (mem == NULL)
+	{
+		fprintf(stderr, "Eroare la maparea memoriei\n");
+		CloseHandle(mem_h);
+		exit(-1);
+	}
+#else
 	struct stat buf;
 	int  rc;
 
-	//Optain the file descriptor
-	if ( (mem_h = shm_open(NUME_MEMORIE_PARTAJATA, O_RDONLY , 0666)) == -1 )
+	//Obtain the file descriptor
+	if ((mem_h = shm_open(NUME_MEMORIE_PARTAJATA, O_RDONLY, 0666)) == -1)
 	{
 		perror("client : ");
-		fprintf(stderr,"Eroare la deschiderea FileMapping\n");
-		exit (-1);
+		fprintf(stderr, "Eroare la deschiderea FileMapping\n");
+		exit(-1);
 	}
 
 	//Find the size of the shared memory
-	rc = fstat( mem_h , &buf );
-	if( rc == -1 )
+	rc = fstat(mem_h, &buf);
+	if (rc == -1)
 	{
 		perror("client : ");
-		fprintf(stderr,"Eroare la verificare marime\n");
-		exit (-1);
-	} else {
+		fprintf(stderr, "Eroare la verificare marime\n");
+		exit(-1);
+	}
+	else {
 		filesize = buf.st_size;
 	}
 
 	//Load it into process memory
-	if ( (mem = (char*) mmap(0, filesize, PROT_READ , MAP_SHARED, mem_h, 0)) == NULL )
+	if ((mem = (char*)mmap(0, filesize, PROT_READ, MAP_SHARED, mem_h, 0)) == NULL)
 	{
-		fprintf(stderr,"Eroare la maparea memoriei\n");
+		fprintf(stderr, "Eroare la maparea memoriei\n");
 		close(mem_h);
-		exit (-1);
+		exit(-1);
 	}
+#endif
 }
 
 /**
@@ -146,6 +172,22 @@ void link_memory()
  */
 void link_ext_memory()
 {
+#ifdef _WIN32
+	ext_mem_h = OpenFileMapping(FILE_MAP_READ, false, NUME_MEMORIE_PARTAJATA_POZITIONARE);
+	if (ext_mem_h == NULL)
+	{
+		fprintf(stderr, "Eroare la accesarea memoriei partajate\n");
+		exit(-1);
+	}
+	ext_mem = (char*)MapViewOfFile(ext_mem_h, FILE_MAP_READ, 0, 0, 0);
+	DWORD lastError = GetLastError();
+	if (ext_mem == NULL)
+	{
+		fprintf(stderr, "Eroare la maparea memoriei\n");
+		CloseHandle(ext_mem_h);
+		exit(-1);
+	}
+#else
 	struct stat buf;
 	int  rc;
 
@@ -176,6 +218,7 @@ void link_ext_memory()
 		close(ext_mem_h);
 		exit (-1);
 	}
+#endif
 }
 
 /**
@@ -183,8 +226,14 @@ void link_ext_memory()
  */
 void release_memory()
 {
+#ifdef _WIN32
+	UnmapViewOfFile(mem);
+	CloseHandle(mem_h);
+#else
 	munmap(mem,filesize);
 	close(mem_h);
+#endif
+	
 }
 
 /**
@@ -192,8 +241,14 @@ void release_memory()
  */
 void release_ext_memory()
 {
+#ifdef _WIN32
+	UnmapViewOfFile(ext_mem);
+	CloseHandle(ext_mem_h);
+#else
 	munmap(ext_mem,ext_filesize);
 	close(ext_mem_h);
+#endif
+	
 }
 
 
@@ -472,7 +527,7 @@ int main(int argc,char *argv[])
 		fflush(stdout);
 		
 		//Deschid fisierul
-		hashDescriptor = open(cale_fisier, O_RDONLY);
+		hashDescriptor = open(cale_fisier, O_RDONLY|O_BINARY);
 		if (hashDescriptor == -1)
 		{
 			fprintf(stderr,"Eroare la deschiderea fisierului de intrare cu numele %s\n", cale_fisier);
@@ -552,7 +607,7 @@ int main(int argc,char *argv[])
 	fflush(stdout);
 	time_t timpStop = time(NULL);
 	
-	int out_fd = open(argv[4], O_CREAT|O_TRUNC|O_RDWR,0666);
+	int out_fd = open(argv[4], O_CREAT|O_TRUNC|O_RDWR|O_BINARY,0666);
 	char nume_query[MARIME_CONST_STRING];
 	strcpy(nume_query, argv[3]); 
 	scrieInFisier(out_fd, rezultate_compunere, forward_query, query_size, nume_query, 
