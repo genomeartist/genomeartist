@@ -18,6 +18,8 @@ void SharedMemoryKeepAliveService::Start()
 
 	WaitForInputIdle(pi.hProcess,INFINITE);
 
+	Sleep(100);
+
 	if (pi.hProcess)
 	{
 		CloseHandle(pi.hProcess);
