@@ -13,7 +13,11 @@
 #ifdef _WIN32
 #include <io.h>
 #else
+#ifdef __APPLE__
+#include <fcntl.h>
+#else
 #include <mqueue.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

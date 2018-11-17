@@ -2,10 +2,14 @@
 #include <io.h>
 #include <fcntl.h>
 #else
+#ifdef __APPLE__
+#include <fcntl.h>
+#else
+#include <mqueue.h>
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <mqueue.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>

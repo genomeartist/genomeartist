@@ -1,5 +1,5 @@
 CC = g++
-DEBUG = -g
+DEBUG = -O3
 PROFILE = -pg
 CFLAGS = -m64 -Wall -W $(DEBUG) $(PROFILE)
 LDFLAGS = -m64 $(PROFILE)
@@ -10,7 +10,7 @@ build: $(TARGETS)
 
 ###############################################################
 client : $(CALE)/module/client.o $(CALE)/utilities/utils.o $(CALE)/utilities/structures_interval.o $(CALE)/utilities/structures_expanded.o $(CALE)/module/m1_hash_retrieval.o $(CALE)/utilities/structures_aliniere.o $(CALE)/module/m2_reuniune.o $(CALE)/module/m3_expand.o $(CALE)/module/m3_stitch.o $(CALE)/module/m4_pick.o $(CALE)/module/m4_smith-waterman.o $(CALE)/module/m5_compunere_rezultate.o $(CALE)/utilities/expansion_generation.o $(CALE)/utilities/configuration.o $(CALE)/utilities/gene_retrieval.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lrt
+	$(CC) $(LDFLAGS) -o $@ $^
 
 $(CALE)/module/client.o : $(CALE)/module/client.cpp
 	$(CC) $(CFLAGS) -c -o $@ $^
@@ -76,21 +76,21 @@ $(CALE)/utilities/structures_aliniere.o: $(CALE)/utilities/structures_aliniere.c
 	
 ###############################################################
 cleaner : $(CALE)/utilities/cleaner.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lrt
+	$(CC) $(LDFLAGS) -o $@ $^ 
 
 $(CALE)/utilities/cleaner.o : $(CALE)/utilities/cleaner.cpp
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 #~~~~~~~#
 server : $(CALE)/utilities/server.o $(CALE)/utilities/gene_retrieval.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lrt
+	$(CC) $(LDFLAGS) -o $@ $^ 
 
 $(CALE)/utilities/server.o : $(CALE)/utilities/server.cpp 
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 #~~~~~~~#
 data_hashing_utility: $(CALE)/utilities/data_hashing_utility.o $(CALE)/utilities/utils.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lrt
+	$(CC) $(LDFLAGS) -o $@ $^ 
 
 $(CALE)/utilities/data_hashing_utility.o : $(CALE)/utilities/data_hashing_utility.cpp
 	$(CC) $(CFLAGS) -c -o $@ $^

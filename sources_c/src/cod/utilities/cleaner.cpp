@@ -1,8 +1,12 @@
 #ifndef _WIN32
+#ifdef __APPLE__
+        #include <fcntl.h>
+#else
+        #include <mqueue.h>
+#endif
 	#include <stdio.h>
 	#include <sys/types.h>
 	#include <sys/mman.h>
-	#include <mqueue.h>
 	#include <string.h>
 	#include <stdlib.h>
 	#include <errno.h>
