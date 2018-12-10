@@ -29,6 +29,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -316,6 +317,18 @@ public class MyUtils {
         filename += "."+TRANSPOSON_EXT;
         return filename;
     }
+    
+    /**
+    * Retrieve current UTC timestamp in ISO 8601 format
+    * @return string
+    */
+    public static String getCurrentUTCTimestampInISO8601Format() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Calendar calendar = Calendar.getInstance();
+        return dateFormat.format(calendar.getTime());
+    }
+
 
     /**
      * Converteste un vector de Integer in vector de int
