@@ -574,10 +574,11 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     /**
      * Lansez actiunea de importare (deschidere)
      */
-    public void fireActionLoad() {
+    public void fireActionLoad() {        
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(RootFrame.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            final File file = fc.getSelectedFile();
+            final File[] files = fc.getSelectedFiles();
 
             //Afisez mesajul de cautare
             glassPane.setMessage(DrawingConstants.TEXT_OPEN_ROW1,
@@ -587,30 +588,34 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             //Lansez cautarea propriu zisa
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    MainResult mainResult = ExternalLink.readResultFile(file);
-                    if (mainResult == null) {
-                        //custom title, error icon
-                        JOptionPane.showMessageDialog(RootFrame.this,
-                            "Error opening file",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                        glassPane.setVisible(false);
-                        return;
-                    } else {
-                        mainResult.backgroundFile = file;
-                        mainResult.isSaved = true;
-                        mainResult.hasBeenModified = false;
+                    for(int i = 0; i < files.length; i++)
+                    {
+                        MainResult mainResult = ExternalLink.readResultFile(files[i]);
+                        if (mainResult == null) {
+                            //custom title, error icon
+                            JOptionPane.showMessageDialog(RootFrame.this,
+                                "Error opening file",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                            glassPane.setVisible(false);
+                            return;
+                        } else {
+                            mainResult.backgroundFile = files[i];
+                            mainResult.isSaved = true;
+                            mainResult.hasBeenModified = false;
 
-                        JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
-                                mainResult);
-                        tabbedpane.add(mainResult.infoQuery.queryName,
-                                resultPane);
-                        tabbedpane.setSelectedComponent(resultPane);
-                        glassPane.setVisible(false);
+                            JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
+                                    mainResult);
+                            tabbedpane.add(mainResult.infoQuery.queryName,
+                                    resultPane);
+                            tabbedpane.setSelectedComponent(resultPane);
+                            glassPane.setVisible(false);
+                        }
                     }
                 }
             });
         }
+        fc.setMultiSelectionEnabled(false);
     }
 
     /**
