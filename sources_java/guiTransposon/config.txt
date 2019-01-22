@@ -87,6 +87,7 @@ TOOLBAR_FEREASTRA_ICONS_SAVE = save24.gif
 TOOLBAR_FEREASTRA_ICONS_SAVEAS = saveas24.gif
 TOOLBAR_FEREASTRA_ICONS_SEARCH = search24.gif
 TOOLBAR_FEREASTRA_ICONS_SETTINGS = settings24.gif
+TOOLBAR_FEREASTRA_ICONS_EXPORT = export24.gif
 #==================================================
 #      Locatiile icoanelor pentru butoanele 
 #         din toolbarul pentru Lista Echipamente
