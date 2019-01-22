@@ -166,6 +166,36 @@ public class FinalResultExporter {
             System.err.println("Could not export to pdf");
         }
     }
+    
+    /**
+     * Printez formularul cu Jasper Report
+     */
+    public static String[] getBestResultsAsTable(MainResult sourceResult) {
+        IntervalMappingSet intervalMappingSet = sourceResult.bestResult.getIntervalMappingSet();
+        Iterator <IntervalMappingItem> iteratorMapping = intervalMappingSet.iterator();
+        String[] returnTable = new String[MyUtils.COLUMNS_NUMBER];
+        while (iteratorMapping.hasNext()) {
+            IntervalMappingItem mappingItem = iteratorMapping.next();
+            if(!mappingItem.isTransposon()) {
+                returnTable[0] = mappingItem.getFisierOrigine();
+                returnTable[1] = sourceResult.infoQuery.queryName;
+                returnTable[2] = Integer.toString(mappingItem.getPozitieStartGenom());
+                returnTable[3] = Boolean.toString(mappingItem.isComplement());
+                GeneItem auxUpstreamGene = mappingItem.getClosestUpstream();
+                returnTable[4] = auxUpstreamGene.getName();
+                GeneItem auxDownstreamGene = mappingItem.getClosestDownstream();
+                returnTable[5] = auxDownstreamGene.getName();
+                GeneVector auxGeneVector = mappingItem.getInsideGenes();
+                Iterator <GeneItem> iteratorGenes = auxGeneVector.iterator();
+                returnTable[6] = "";
+                while(iteratorGenes.hasNext()) {
+                    GeneItem auxInsideGene = iteratorGenes.next();
+                    returnTable[6] += auxInsideGene.getName() + "; ";
+                }
+            }
+        }
+        return returnTable;
+    }
 
     /**
      * Printez formularul cu Jasper Report
