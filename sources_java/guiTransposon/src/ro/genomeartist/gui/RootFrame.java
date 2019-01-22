@@ -782,7 +782,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         MainResult mainResult;
         //Compun calea catre rezultat
         String outputPath = ReadOnlyConfiguration.getString("FOLDER_OUTPUTS");
-        outputPath += MyUtils.getRandomFileName();
+        outputPath += searchQuery.getQueryName() + "_" + 
+                MyUtils.getCurrentUTCTimestampInISO8601Format() + ".ga";
         File outputFile = new File(outputPath);
         //Fac actiunea in background cu panou de monitorizare
         AbstractProgressCallable callable = ExternalLink.getSearchCallable(searchQuery, outputFile);
