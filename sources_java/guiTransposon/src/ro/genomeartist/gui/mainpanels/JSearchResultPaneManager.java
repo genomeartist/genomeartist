@@ -107,6 +107,14 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
         FinalResultExporter.exportResultAsPdf(globalManager, destination,
                 mainResult, exportResult);
     }
+    
+    /**
+     * Exporta cele mai bune rezultate ca tabel
+     * @param exportResult
+     */
+    public String[] getBestResultsAsTable(MainResult sourceResult) {
+        return FinalResultExporter.getBestResultsAsTable(sourceResult);
+    }
 
     /**
      * Printeaza rezultatul
