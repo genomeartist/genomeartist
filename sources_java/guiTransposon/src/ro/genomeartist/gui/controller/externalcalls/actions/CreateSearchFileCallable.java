@@ -58,7 +58,7 @@ public class CreateSearchFileCallable extends AbstractProgressCallable<SearchFil
         String pathRaw = folderRaw + numeRawNew;
 
         File newRaw = new File(pathRaw);
-        ExternalLink.writeStringToFile(newRaw,searchFileSequence.sequence);
+        ExternalLink.writeStringToFile(newRaw,searchFileSequence.sequence,false);
         searchFile.rawLocation = newRaw;
         this.setProgressValue(100); // of (0,5)
 
