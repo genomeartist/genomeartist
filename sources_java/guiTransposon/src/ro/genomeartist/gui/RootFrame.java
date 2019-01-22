@@ -28,6 +28,7 @@ import ro.genomeartist.components.tabbedpane.JDragableTabbedPane;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
 import ro.genomeartist.gui.utils.ReadWriteConfiguration;
 import ro.genomeartist.gui.controller.externalcalls.GenomeArtistFileFilter;
+import ro.genomeartist.gui.controller.externalcalls.MyTableFilter;
 import ro.genomeartist.gui.controller.externalcalls.ExternalLink;
 import ro.genomeartist.gui.controller.query.MainResult;
 import ro.genomeartist.gui.controller.query.SearchQuery;
@@ -117,6 +118,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String NAME_LOAD = "Load";
     private final static String NAME_SAVE_AS = "Save As";
     private final static String NAME_SETTINGS = "Settings";
+    private final static String NAME_EXPORT = "Export";
     private final static String NAME_EXIT = "Exit";
 
     private final static String ACTION_SEARCH = NAME_SEARCH.toLowerCase();
@@ -124,6 +126,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String ACTION_LOAD = NAME_LOAD.toLowerCase();
     private final static String ACTION_SAVE_AS = NAME_SAVE_AS.toLowerCase();
     private final static String ACTION_SETTINGS = NAME_SETTINGS.toLowerCase();
+    private final static String ACTION_EXPORT = NAME_EXPORT.toLowerCase();
     private final static String ACTION_EXIT = NAME_EXIT.toLowerCase();
 
     //~~~~~~~~~Obiecte proprii~~~~/
@@ -402,6 +405,12 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             item.addActionListener(menuListener);
             item.setActionCommand(ACTION_SAVE_AS);
         menu1.add(item);
+        
+        //Adaug un element la meniu
+        item= new JMenuItem(NAME_EXPORT);
+            item.addActionListener(menuListener);
+            item.setActionCommand(ACTION_EXPORT);
+        menu1.add(item);
 
         menu1.addSeparator();
 
@@ -478,6 +487,14 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             button.addActionListener(menuListener);
             button.setToolTipText("Save a result");
             button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.SAVEAS));
+            button.setFocusable(false);
+        localToolBar.add(button);
+        
+        button = new JButton(NAME_EXPORT);
+            button.setActionCommand(ACTION_EXPORT);
+            button.addActionListener(menuListener);
+            button.setToolTipText("Export best results");
+            button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.EXPORT));
             button.setFocusable(false);
         localToolBar.add(button);
 
@@ -574,10 +591,11 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     /**
      * Lansez actiunea de importare (deschidere)
      */
-    public void fireActionLoad() {
+    public void fireActionLoad() {        
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(RootFrame.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            final File file = fc.getSelectedFile();
+            final File[] files = fc.getSelectedFiles();
 
             //Afisez mesajul de cautare
             glassPane.setMessage(DrawingConstants.TEXT_OPEN_ROW1,
@@ -587,30 +605,34 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             //Lansez cautarea propriu zisa
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    MainResult mainResult = ExternalLink.readResultFile(file);
-                    if (mainResult == null) {
-                        //custom title, error icon
-                        JOptionPane.showMessageDialog(RootFrame.this,
-                            "Error opening file",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                        glassPane.setVisible(false);
-                        return;
-                    } else {
-                        mainResult.backgroundFile = file;
-                        mainResult.isSaved = true;
-                        mainResult.hasBeenModified = false;
+                    for(int i = 0; i < files.length; i++)
+                    {
+                        MainResult mainResult = ExternalLink.readResultFile(files[i]);
+                        if (mainResult == null) {
+                            //custom title, error icon
+                            JOptionPane.showMessageDialog(RootFrame.this,
+                                "Error opening file",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                            glassPane.setVisible(false);
+                            return;
+                        } else {
+                            mainResult.backgroundFile = files[i];
+                            mainResult.isSaved = true;
+                            mainResult.hasBeenModified = false;
 
-                        JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
-                                mainResult);
-                        tabbedpane.add(mainResult.infoQuery.queryName,
-                                resultPane);
-                        tabbedpane.setSelectedComponent(resultPane);
-                        glassPane.setVisible(false);
+                            JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
+                                    mainResult);
+                            tabbedpane.add(mainResult.infoQuery.queryName,
+                                    resultPane);
+                            tabbedpane.setSelectedComponent(resultPane);
+                            glassPane.setVisible(false);
+                        }
                     }
                 }
             });
         }
+        fc.setMultiSelectionEnabled(false);
     }
 
     /**
@@ -701,6 +723,38 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             }
         }
     }
+    
+    /**
+     * Lansez actiunea de exportare rezultatele cele mai bune
+     */
+    public void fireActionExport() {
+        String[][] bestResultData = new String[tabbedpane.getTabCount()+1][MyUtils.COLUMNS_NUMBER];
+        bestResultData[0] = new String[]{"Origin File", "Query Name", "Genome Start Position", "Is Complement?" ,"Upstream Gene", "Downstream Gene" ,"Inside Genes"};
+        int rowIndex = 0;
+        
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                bestResultData[++rowIndex] = auxComponent.getBestResultsAsTable(auxMainResult);
+            }
+        }
+        JFileChooser auxfc = new JFileChooser();
+        auxfc.addChoosableFileFilter(new MyTableFilter());
+        auxfc.setSelectedFile(new File("."+ MyUtils.CSV_EXT));
+        int returnVal = auxfc.showSaveDialog(RootFrame.this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File destination = auxfc.getSelectedFile();
+            if (destination.exists())
+                destination.delete();
+            for(int i = 0; i < rowIndex+1; i++) {
+                for(int j = 0; j < MyUtils.COLUMNS_NUMBER; j++) {
+                    ExternalLink.writeStringToFile(destination, bestResultData[i][j]+"\t", true);
+                }
+                ExternalLink.writeStringToFile(destination, "\n", true);
+            }        
+        }
+    }
 
     /**
      * Lansez actiunea de deschidere panou de setari
@@ -728,9 +782,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         MainResult mainResult;
         //Compun calea catre rezultat
         String outputPath = ReadOnlyConfiguration.getString("FOLDER_OUTPUTS");
-        outputPath += searchQuery.getQueryName() + "_" + 
-                MyUtils.getCurrentUTCTimestampInISO8601Format() + ".ga";
-
+        outputPath += MyUtils.getRandomFileName();
         File outputFile = new File(outputPath);
         //Fac actiunea in background cu panou de monitorizare
         AbstractProgressCallable callable = ExternalLink.getSearchCallable(searchQuery, outputFile);
@@ -791,6 +843,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 } else
                 if (ACTION_SETTINGS.equals(cmd)) {
                     fireActionShowSettings();
+                } else
+                if (ACTION_EXPORT.equals(cmd)) {
+                    fireActionExport();
                 } else
                 if (ACTION_EXIT.equals(cmd)) {
                     fireActionExit();
