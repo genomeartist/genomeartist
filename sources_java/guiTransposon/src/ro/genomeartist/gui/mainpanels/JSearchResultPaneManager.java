@@ -27,6 +27,7 @@ import ro.genomeartist.gui.controller.exporters.FinalResultExporter;
 import ro.genomeartist.gui.mainpanels.finalresult.JFinalResultSetPane;
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -112,8 +113,8 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
      * Exporta cele mai bune rezultate ca tabel
      * @param exportResult
      */
-    public String[] getBestResultsAsTable(MainResult sourceResult) {
-        return FinalResultExporter.getBestResultsAsTable(sourceResult);
+    public ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult) {
+        return FinalResultExporter.getBestResultsInsertionData(sourceResult);
     }
 
     /**
