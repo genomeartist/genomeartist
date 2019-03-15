@@ -58,8 +58,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -728,15 +727,16 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
      * Lansez actiunea de exportare rezultatele cele mai bune
      */
     public void fireActionExport() {
-        String[][] bestResultData = new String[tabbedpane.getTabCount()+1][MyUtils.COLUMNS_NUMBER];
-        bestResultData[0] = new String[]{"Origin File", "Query Name", "Genome Start Position", "Is Complement?" ,"Upstream Gene", "Downstream Gene" ,"Inside Genes"};
-        int rowIndex = 0;
+        ArrayList<String[]> bestResultData = new ArrayList<String[]>();
+        ArrayList<String[]> bestResultsBatch;
+        bestResultData.add(new String[]{"Query", "Insertion Target", "Transposon", "Reference Coordinate", "Transposon Coordinate" ,"Hit Gene(s)", "Upstream Gene", "Downstream Gene", "Alignment Score"});
         
         for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
             JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
             MainResult auxMainResult = auxComponent.getMainResult();
             if(auxMainResult.bestResult != null) {
-                bestResultData[++rowIndex] = auxComponent.getBestResultsAsTable(auxMainResult);
+                bestResultsBatch = auxComponent.getBestResultsInsertionData(auxMainResult);
+                bestResultData.addAll(bestResultsBatch);
             }
         }
         JFileChooser auxfc = new JFileChooser();
@@ -747,9 +747,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             File destination = auxfc.getSelectedFile();
             if (destination.exists())
                 destination.delete();
-            for(int i = 0; i < rowIndex+1; i++) {
+            for(int i = 0; i < bestResultData.size(); i++) {
                 for(int j = 0; j < MyUtils.COLUMNS_NUMBER; j++) {
-                    ExternalLink.writeStringToFile(destination, bestResultData[i][j]+"\t", true);
+                    ExternalLink.writeStringToFile(destination, bestResultData.get(i)[j]+"\t", true);
                 }
                 ExternalLink.writeStringToFile(destination, "\n", true);
             }        
