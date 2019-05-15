@@ -415,7 +415,7 @@ public class FinalResultExporter {
      */
     public static String getTDS(IntervalMappingItem GenomeItem, IntervalMappingSet intervalMappingSet, FinalResultItem finalResultItem, int[] codifiedInsertionPosition, int lengthTDS, boolean fasta, boolean referenceStrand) {
         int gapCount, borderIndex, extractedSequenceIndex, i;
-        String output, auxElement;
+        String output;
         
         if(codifiedInsertionPosition[2] == 0) {
             borderIndex = GenomeItem.getOutStringOffset() + GenomeItem.getOutStringLength();
@@ -426,10 +426,8 @@ public class FinalResultExporter {
             gapCount = output.length() - output.replace("-","").length();
             i = 0;
             while(gapCount > 0 && extractedSequenceIndex > 0) {
-		auxElement = finalResultItem.getOut1().substring(extractedSequenceIndex-i-1, extractedSequenceIndex-i);
-		if(!auxElement.equals("-"))
-			gapCount--;	
-                output = auxElement + output;            
+                output = finalResultItem.getOut1().substring(extractedSequenceIndex-i-1, extractedSequenceIndex-i) + output;
+                gapCount--;
                 i++;
             }
         }
@@ -442,10 +440,8 @@ public class FinalResultExporter {
             gapCount = output.length() - output.replace("-","").length();
             i = 0;
             while(gapCount > 0 && extractedSequenceIndex < finalResultItem.getOut1().length()) {
-		auxElement = finalResultItem.getOut1().substring(extractedSequenceIndex+i, extractedSequenceIndex+i+1);
-		if(!auxElement.equals("-"))
-			gapCount--;
-                output = output + auxElement;               
+                output = output + finalResultItem.getOut1().substring(extractedSequenceIndex+i, extractedSequenceIndex+i+1);
+                gapCount--;
                 i++;
             }
         }

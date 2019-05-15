@@ -36,6 +36,9 @@ import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
+import static ro.genomeartist.gui.controller.exporters.FinalResultExporter.filterIntervalMappingSet;
+import static ro.genomeartist.gui.controller.exporters.FinalResultExporter.getInsertionPosition;
+import ro.genomeartist.gui.controller.settings.GeneralSettings;
 
 /**
  *
@@ -50,7 +53,10 @@ public class FinalResultItemAlignment implements ICanPaint {
     private FinalResultItem finalResultItem;
     private Font monospaceFont_gui;
     private Font monospaceFont_report;
-
+    
+    //generalSettings data
+    GeneralSettings generalSettings;
+    
     //###Display offset
     private int offset;
 
@@ -67,6 +73,9 @@ public class FinalResultItemAlignment implements ICanPaint {
     public FinalResultItemAlignment(FinalResultItem finalResultItem) {
         this.finalResultItem = finalResultItem;
 
+        generalSettings = new GeneralSettings();
+        generalSettings.loadFromFile();
+        
         //Creez un font monospaced
         Font font = UIManager.getDefaults().getFont("Table.font");
         this.monospaceFont_gui = new Font(Font.MONOSPACED, Font.PLAIN, font.getSize());
@@ -121,6 +130,7 @@ public class FinalResultItemAlignment implements ICanPaint {
         //Culoarea de desenare
         Color colorIntervalBorder;
         Color colorIntervalFill;
+        Color colorInsertionPosition;
 
         //Auxiliare pentru calcule
         String auxString;
@@ -153,6 +163,7 @@ public class FinalResultItemAlignment implements ICanPaint {
         //Stabilesc culorile
         colorIntervalBorder = DrawingConstants.COLOR_CHENAR_BORDER;
         colorIntervalFill = DrawingConstants.COLOR_CHENAR_FILL;
+        colorInsertionPosition = DrawingConstants.COLOR_INSERTION_POSITION;
 
         // ====================
         // Incep sa desenez
@@ -183,6 +194,10 @@ public class FinalResultItemAlignment implements ICanPaint {
 
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
 
+        //Calculez pozitia de insertie
+        IntervalMappingSet filteredIntervalMappingSet = filterIntervalMappingSet(finalResultItem.getIntervalMappingSet(), generalSettings.algorithmParams.getLengthTolerance());
+        int[] codifiedInsertionPosition = getInsertionPosition(filteredIntervalMappingSet);
+        
         //Iau fiecare interval si il desenez
         indexInterval = 1;
         while (intervale.hasNext()) {
@@ -386,17 +401,25 @@ public class FinalResultItemAlignment implements ICanPaint {
             // </editor-fold>
 
             // <editor-fold defaultstate="collapsed" desc="Text pozitie genom">
-            textMarkerWidth = DrawingConstants.TEXT_MARKER_WIDTH + DrawingConstants.LINEWIDTH;
-
+            textMarkerWidth = DrawingConstants.TEXT_MARKER_WIDTH + DrawingConstants.LINEWIDTH;            
+            
             //Plasez textul de mapare genom
             auxString = intervalMappingItem.getPozitieStartGenom() + "";
             auxInt = fontMetrics.stringWidth(auxString);
             sumInt = auxInt+textMarkerWidth+indexWidth/2;
             if (sumInt < intervalWidth/2) {
                 localX = intervalLeft + textMarkerWidth;
-                localY = DrawingConstants.MARGIN_TOP + 5 * lineHeight;
-                g2d.setColor(colorIntervalBorder);
+                localY = DrawingConstants.MARGIN_TOP + 5 * lineHeight;  
+                oldFont = g2d.getFont();
+                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])
+                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                    g2d.setColor(colorInsertionPosition);                    
+                    g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
+                }
+                else
+                    g2d.setColor(colorIntervalBorder);
                 g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
             }
 
             //Plasez textul de mapare genom
@@ -407,8 +430,16 @@ public class FinalResultItemAlignment implements ICanPaint {
             if (sumInt < intervalWidth) {
                 localX = intervalRight - auxInt - textMarkerWidth;
                 localY = DrawingConstants.MARGIN_TOP + 5 * lineHeight;
-                g2d.setColor(colorIntervalBorder);
+                oldFont = g2d.getFont();                
+                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])
+                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                    g2d.setColor(colorInsertionPosition);
+                    g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
+                }
+                else
+                    g2d.setColor(colorIntervalBorder);
                 g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
             }
             // </editor-fold>
         }

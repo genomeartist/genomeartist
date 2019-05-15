@@ -22,6 +22,7 @@ package ro.genomeartist.gui.controller.finalresult;
 import ro.genomeartist.gui.utils.ReadWriteConfiguration;
 import ro.genomeartist.gui.custompaint.DrawingConstants;
 import ro.genomeartist.gui.interfaces.ICanPaint;
+import ro.genomeartist.gui.controller.exporters.FinalResultExporter;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -153,6 +154,7 @@ public class FinalResultItem implements ICanPaint {
         //Culoarea de desenare
         Color colorIntervalBorder;
         Color colorIntervalFill;
+        Color colorInsertionPosition;
 
         //Variabile pentru sumar
         String prefixSeparator;
@@ -236,6 +238,10 @@ public class FinalResultItem implements ICanPaint {
         // </editor-fold>
 
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
+        
+        //Calculez pozitia de insertie
+        IntervalMappingSet filteredIntervalMappingSet = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), Integer.MAX_VALUE);
+        int[] codifiedInsertionPosition = FinalResultExporter.getInsertionPosition(filteredIntervalMappingSet);
 
         //Iau fiecare interval si il desenez
         indexInterval = 1;
@@ -259,6 +265,7 @@ public class FinalResultItem implements ICanPaint {
                 colorIntervalBorder = DrawingConstants.COLOR_GENOM_BORDER;
                 colorIntervalFill = DrawingConstants.COLOR_GENOM_FILL;
             }
+            colorInsertionPosition = DrawingConstants.COLOR_INSERTION_POSITION;
             // </editor-fold>
 
             // ~~~~~~~~~~~~~~~~~~Interval~~~~~~~~~~~~~~~~~~~~~~~
@@ -422,8 +429,16 @@ public class FinalResultItem implements ICanPaint {
             if (sumInt < intervalWidth/2) {
                 localX = intervalLeft + textMarkerWidth;
                 localY = DrawingConstants.MARGIN_TOP + 3 * lineHeight;
-                g2d.setColor(colorIntervalBorder);
+                oldFont = g2d.getFont();
+                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])
+                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                    g2d.setColor(colorInsertionPosition);                    
+                    g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
+                }
+                else
+                    g2d.setColor(colorIntervalBorder);
                 g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
             }
 
             //Plasez textul de mapare genom
@@ -434,8 +449,16 @@ public class FinalResultItem implements ICanPaint {
             if (sumInt < intervalWidth) {
                 localX = intervalRight - auxInt - textMarkerWidth;
                 localY = DrawingConstants.MARGIN_TOP + 3 * lineHeight;
-                g2d.setColor(colorIntervalBorder);
+                oldFont = g2d.getFont();                
+                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])
+                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                    g2d.setColor(colorInsertionPosition);
+                    g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
+                }
+                else
+                    g2d.setColor(colorIntervalBorder);
                 g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
             }
             // </editor-fold>
         }
