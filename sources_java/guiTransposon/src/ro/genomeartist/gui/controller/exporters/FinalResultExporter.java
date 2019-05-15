@@ -171,18 +171,21 @@ public class FinalResultExporter {
     /**
      * Pun datele dorite intr-un tabel de String-uri
      */
-    public static ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult) {
+    public static ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
         String queryName = sourceResult.infoQuery.queryName;       
         int score = sourceResult.bestResult.getScore();
         ArrayList<String[]> batchResult = new ArrayList<String[]>();
-        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet());
+        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance);
         
-        String[] individualResult = FinalResultExporter.getIndividualInsertionData(filteredSet, queryName, score);
-        batchResult.add(individualResult);
+        String[] individualResult = getIndividualInsertionData(filteredSet, queryName, score, sourceResult.bestResult, lengthSeqExtract);
+        if(individualResult != null)
+            batchResult.add(individualResult);
         for(int i = 0; i < sourceResult.finalResultSet.size(); i++) {
             if(!sourceResult.finalResultSet.elementAt(i).equals(sourceResult.bestResult) && sourceResult.finalResultSet.elementAt(i).getScore() == score) {
-                filteredSet = filterIntervalMappingSet(sourceResult.finalResultSet.elementAt(i).getIntervalMappingSet());
-                batchResult.add(FinalResultExporter.getIndividualInsertionData(filteredSet, queryName, score));
+                filteredSet = filterIntervalMappingSet(sourceResult.finalResultSet.elementAt(i).getIntervalMappingSet(), lengthTolerance);
+                individualResult = getIndividualInsertionData(filteredSet, queryName, score, sourceResult.bestResult, lengthSeqExtract);
+                if(individualResult != null)
+                    batchResult.add(individualResult);
             }
         }
         return batchResult;
@@ -191,13 +194,13 @@ public class FinalResultExporter {
     /**
      * Filtrez insulele artefact
      */
-    public static IntervalMappingSet filterIntervalMappingSet(IntervalMappingSet inputSet) {
+    public static IntervalMappingSet filterIntervalMappingSet(IntervalMappingSet inputSet, int lengthTolerance) {
         ArrayList<IntervalMappingSet> intervalClusters = new ArrayList<IntervalMappingSet>();
         int i = 0;
         int maxValue;
         int maxIndex = 0;
         ArrayList<Integer> maxCoordinates = new ArrayList<Integer>();
-        // Pune fiecare insula de intervale continue intr-un element separat din ArrayList-ul intervalClusters
+        // Pune fiecare insula de intervale separate prin max lengthTolerance intr-un element separat din ArrayList-ul intervalClusters
         while(i < inputSet.size()) {
             IntervalMappingSet auxIntervalSet = new IntervalMappingSet();
             auxIntervalSet.add(inputSet.elementAt(i));
@@ -207,18 +210,16 @@ public class FinalResultExporter {
                 intervalClusters.add(auxIntervalSet);
                 break;
             }
-            // Daca pozitiile in query a doua intervale sunt cosnecutive, sunt inserate in acelasi Cluster
-            while(inputSet.elementAt(i-1).getPozitieStopQuery() + 1 == inputSet.elementAt(i).getPozitieStartQuery()) {
+            // Daca pozitiile in query a doua intervale sunt separate de max lengthTolerance, sunt inserate in acelasi Cluster
+            while(inputSet.elementAt(i).getPozitieStartQuery() - inputSet.elementAt(i-1).getPozitieStopQuery() -1 <= lengthTolerance) {
                 auxIntervalSet.add(inputSet.elementAt(i));
                 i++;
-                if(i == inputSet.size()) {
-                    intervalClusters.add(auxIntervalSet);
+                if(i == inputSet.size())
                     break;
-                }
             }
             intervalClusters.add(auxIntervalSet);
         }
-        // Selectez insula (clusterul) de lungimea cea mai mare
+        // Selectez insula (clusterul) cu valoarea de granita cea mai mare sau egala cu 1
         for(int j = 0; j < intervalClusters.size(); j++) {
             maxValue = 0;
             for(int k = 0; k < intervalClusters.get(j).size(); k++) {               
@@ -250,17 +251,12 @@ public class FinalResultExporter {
     /**
      * Identific locusul de insertie
      */
-    public static String[] getIndividualInsertionData(IntervalMappingSet intervalMappingSet, String queryName, int score) { 
-        IntervalMappingItem TransposonItem = null;
-        IntervalMappingItem GenomeItem = null;
+    public static int[] getInsertionPosition(IntervalMappingSet intervalMappingSet) {
         String conformation = new String();
-        int borderPosition = 0;
-        String[] returnTable = new String[MyUtils.COLUMNS_NUMBER];
-        returnTable[0] = queryName;
-        returnTable[8] = Integer.toString(score);
-                
+        int[] codifiedInsertionPosition = new int[4];
         if(intervalMappingSet.size() == 2) {
             // Cazul transpozon-genom sau genom-stranspozon
+            codifiedInsertionPosition[3] = 0;
             if(intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon())
                 conformation = "Left Transposon";
             else if(!intervalMappingSet.elementAt(0).isTransposon() && intervalMappingSet.elementAt(1).isTransposon())
@@ -277,19 +273,20 @@ public class FinalResultExporter {
                     conformation = "Right Transposon";
             }
             if(conformation.equals("Left Transposon")) {
-                TransposonItem = intervalMappingSet.elementAt(0);
-                GenomeItem = intervalMappingSet.elementAt(1);
-                borderPosition = 1;
+                codifiedInsertionPosition[0] = 0;//TransposonItem = intervalMappingSet.elementAt(0);
+                codifiedInsertionPosition[1] = 1;//GenomeItem = intervalMappingSet.elementAt(1);
+                codifiedInsertionPosition[2] = 1;//borderPosition = 1;
             }
             else if(conformation.equals("Right Transposon")) {
-                TransposonItem = intervalMappingSet.elementAt(1);
-                GenomeItem = intervalMappingSet.elementAt(0);
-                borderPosition = 0;
+                codifiedInsertionPosition[0] = 1;//TransposonItem = intervalMappingSet.elementAt(1);
+                codifiedInsertionPosition[1] = 0;//GenomeItem = intervalMappingSet.elementAt(0);
+                codifiedInsertionPosition[2] = 0;//borderPosition = 0;
             }                      
         }       
         // Cazul transpozon-genom-transpozon
         else if(intervalMappingSet.size() == 3 && intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {
-            GenomeItem = intervalMappingSet.elementAt(1);
+            codifiedInsertionPosition[1] = 1;//GenomeItem = intervalMappingSet.elementAt(1);
+            codifiedInsertionPosition[3] = 1;
             if(intervalMappingSet.elementAt(0).getPozitieStopQuery() == 1)
                 conformation = "Left Transposon";
             else if(intervalMappingSet.elementAt(2).getPozitieStartQuery() == 1)
@@ -299,38 +296,80 @@ public class FinalResultExporter {
             else
                 conformation = "Right Transposon";
             if(conformation.equals("Left Transposon")) {
-                TransposonItem = intervalMappingSet.elementAt(0);
-                GenomeItem = intervalMappingSet.elementAt(1);
-                borderPosition = 1;
+                codifiedInsertionPosition[0] = 0;//TransposonItem = intervalMappingSet.elementAt(0);
+                codifiedInsertionPosition[2] = 1;//borderPosition = 1;
             }
             else if(conformation.equals("Right Transposon")) {
-                TransposonItem = intervalMappingSet.elementAt(2);
-                GenomeItem = intervalMappingSet.elementAt(1);
-                borderPosition = 0;
+                codifiedInsertionPosition[0] = 2;//TransposonItem = intervalMappingSet.elementAt(2);
+                codifiedInsertionPosition[2] = 0;//borderPosition = 0;
             }
+        }
+        else if(intervalMappingSet.size() == 1 && !intervalMappingSet.elementAt(0).isTransposon()) {
+            codifiedInsertionPosition[0] = -2;
+            codifiedInsertionPosition[1] = -1;
+            codifiedInsertionPosition[2] = -1;
+            codifiedInsertionPosition[3] = -1;
         }
         // Cazul artefact
         else {
-            IntervalMappingItem mappingItem = intervalMappingSet.elementAt(0);
-            returnTable[1] = mappingItem.getFisierOrigine();
+            codifiedInsertionPosition[0] = codifiedInsertionPosition[1] = codifiedInsertionPosition[2] = codifiedInsertionPosition[3] = -1;
+        }
+        return codifiedInsertionPosition;
+    }    
+    
+    /**
+     * Creez si returnez un rand de tabel
+     */
+    public static String[] getIndividualInsertionData(IntervalMappingSet intervalMappingSet, String queryName, int score, FinalResultItem finalResultItem, int lengthTDS) { 
+        IntervalMappingItem TransposonItem;
+        IntervalMappingItem GenomeItem;
+        int borderPosition = 0;
+        String[] returnTable = new String[MyUtils.COLUMNS_NUMBER];
+        
+        returnTable[0] = queryName;
+        returnTable[8] = Integer.toString(score);
+        returnTable[11] = "";
+                
+        int[] codifiedInsertionPosition = getInsertionPosition(intervalMappingSet);
+        if(codifiedInsertionPosition[0] == -2) {
+            TransposonItem = null;
+            GenomeItem = intervalMappingSet.elementAt(0);
+            borderPosition = -2;
             returnTable[2] = "";
-            returnTable[3] = Integer.toString(mappingItem.getPozitieStartGenom());
-            returnTable[4] = "";
-            returnTable[5] = "";
-            returnTable[6] = "";
-            returnTable[7] = "";
-            return returnTable;
+        }
+        else if(codifiedInsertionPosition[0] != -1) {
+            TransposonItem = intervalMappingSet.elementAt(codifiedInsertionPosition[0]);
+            GenomeItem = intervalMappingSet.elementAt(codifiedInsertionPosition[1]);
+            borderPosition = codifiedInsertionPosition[2];
+            returnTable[2] = TransposonItem.getFisierOrigine();
+        }
+        else {              // Cazul artefact
+            return null;
         }
         
         returnTable[1] = GenomeItem.getFisierOrigine();
-        returnTable[2] = TransposonItem.getFisierOrigine();
+
         if(borderPosition == 1) {
             returnTable[3] = Integer.toString(GenomeItem.getPozitieStartGenom());
             returnTable[4] = Integer.toString(TransposonItem.getPozitieStopGenom());
+            returnTable[9] = getTDS(GenomeItem, intervalMappingSet, finalResultItem, codifiedInsertionPosition, lengthTDS, false, false);
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStopGenom());
+            if(GenomeItem.getPozitieStartQuery() - TransposonItem.getPozitieStopQuery() > 1)
+                returnTable[11] = "*";
         }
         else if(borderPosition == 0) {
             returnTable[3] = Integer.toString(GenomeItem.getPozitieStopGenom());
             returnTable[4] = Integer.toString(TransposonItem.getPozitieStartGenom());
+            returnTable[9] = getTDS(GenomeItem, intervalMappingSet, finalResultItem, codifiedInsertionPosition, lengthTDS, false, false);
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStartGenom());
+            if(TransposonItem.getPozitieStartQuery() - GenomeItem.getPozitieStopQuery() > 1)
+                returnTable[11] = "*";
+        }
+        else if(borderPosition == -2) {
+            returnTable[3] = Integer.toString(GenomeItem.getPozitieStartGenom());
+            returnTable[4] = "";
+            returnTable[9] = "";
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStopGenom());
         }
         returnTable[5] = "";
         GeneVector auxGeneVector = GenomeItem.getInsideGenes();
@@ -350,11 +389,84 @@ public class FinalResultExporter {
         if(auxDownstreamGene != null)
             returnTable[7] = auxDownstreamGene.getName();
         else
-           returnTable[7] = "";
-        
+            returnTable[7] = "";
+                      
         return returnTable;
     }
 
+    /**
+     * Pun datele dorite intr-un fisier fasta
+     */
+    public static String getBestResultsTDS(MainResult sourceResult, int lengthTDS, int lengthTolerance, boolean referenceStrand) {
+        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance);
+        int[] codifiedInsertionPosition = getInsertionPosition(filteredSet);
+        if(codifiedInsertionPosition[1] == -1)
+            return null;
+        IntervalMappingItem GenomeItem = filteredSet.elementAt(codifiedInsertionPosition[1]);
+        String individualResult = getTDS(GenomeItem, sourceResult.bestResult.getIntervalMappingSet(), sourceResult.bestResult, codifiedInsertionPosition, lengthTDS, true, referenceStrand);        
+        if(individualResult != null)
+            return individualResult;
+        else
+            return null;
+    }
+    
+    /**
+     * Returnez TDS
+     */
+    public static String getTDS(IntervalMappingItem GenomeItem, IntervalMappingSet intervalMappingSet, FinalResultItem finalResultItem, int[] codifiedInsertionPosition, int lengthTDS, boolean fasta, boolean referenceStrand) {
+        int gapCount, borderIndex, extractedSequenceIndex, i;
+        String output, auxElement;
+        
+        if(codifiedInsertionPosition[2] == 0) {
+            borderIndex = GenomeItem.getOutStringOffset() + GenomeItem.getOutStringLength();
+            extractedSequenceIndex = borderIndex - lengthTDS;
+            if(extractedSequenceIndex < 0)
+                extractedSequenceIndex = 0;
+            output = finalResultItem.getOut1().substring(extractedSequenceIndex, borderIndex);
+            gapCount = output.length() - output.replace("-","").length();
+            i = 0;
+            while(gapCount > 0 && extractedSequenceIndex > 0) {
+		auxElement = finalResultItem.getOut1().substring(extractedSequenceIndex-i-1, extractedSequenceIndex-i);
+		if(!auxElement.equals("-"))
+			gapCount--;	
+                output = auxElement + output;            
+                i++;
+            }
+        }
+        else if(codifiedInsertionPosition[2] == 1) {
+            borderIndex = GenomeItem.getOutStringOffset();
+            extractedSequenceIndex = borderIndex + lengthTDS;
+            if(extractedSequenceIndex > finalResultItem.getOut1().length())
+                extractedSequenceIndex = finalResultItem.getOut1().length();
+            output = finalResultItem.getOut1().substring(borderIndex, extractedSequenceIndex);
+            gapCount = output.length() - output.replace("-","").length();
+            i = 0;
+            while(gapCount > 0 && extractedSequenceIndex < finalResultItem.getOut1().length()) {
+		auxElement = finalResultItem.getOut1().substring(extractedSequenceIndex+i, extractedSequenceIndex+i+1);
+		if(!auxElement.equals("-"))
+			gapCount--;
+                output = output + auxElement;               
+                i++;
+            }
+        }
+        else
+            return null;
+        
+        if(fasta) {
+            if(GenomeItem.isComplement() == referenceStrand)
+                return output.replace("-","");
+            else
+                return null;
+        }
+        else {
+            if(GenomeItem.isComplement())
+                output += "(-)";
+            else
+                output += "(+)";
+        }        
+        return output;
+    }
+    
     /**
      * Printez formularul cu Jasper Report
      */
@@ -409,3 +521,4 @@ public class FinalResultExporter {
         // </editor-fold>
     }
 }
+
