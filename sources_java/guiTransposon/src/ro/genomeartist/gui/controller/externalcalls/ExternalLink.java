@@ -498,10 +498,10 @@ public class ExternalLink {
       * @param newFile
       * @param string
       */
-     public static void writeStringToFile(File newFile, String string) {
+     public static void writeStringToFile(File newFile, String string, boolean append) {
         BufferedWriter out;
         try {
-            out = new BufferedWriter(new FileWriter(newFile, false));
+            out = new BufferedWriter(new FileWriter(newFile, append));
             out.write(string);
             out.close();
         } catch (IOException ex) {

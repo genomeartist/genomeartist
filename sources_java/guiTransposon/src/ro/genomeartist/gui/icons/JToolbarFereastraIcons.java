@@ -44,6 +44,8 @@ public class JToolbarFereastraIcons implements IGlobalClass {
     public static final int SAVEAS = 3;
     public static final int SEARCH = 4;
     public static final int SETTINGS = 5;
+    public static final int EXPORT = 6;
+    public static final int FASTA = 7;
 
     //Icoane
     private Image iconLoad;
@@ -51,12 +53,16 @@ public class JToolbarFereastraIcons implements IGlobalClass {
     private Image iconSaveas;
     private Image iconSearch;
     private Image iconSettings;
+    private Image iconExport;
+    private Image iconFasta;
 
     private ImageIcon imageIconLoad;
     private ImageIcon imageIconSave;
     private ImageIcon imageIconSaveas;
     private ImageIcon imageIconSearch;
     private ImageIcon imageIconSettings;
+    private ImageIcon imageIconExport;
+    private ImageIcon imageIconFasta;
 
     //In caz ca nu am icon
     private Icon noIcon;
@@ -98,6 +104,16 @@ public class JToolbarFereastraIcons implements IGlobalClass {
         iconsPath = iconsFolder + ReadOnlyConfiguration.getString("TOOLBAR_FEREASTRA_ICONS_SETTINGS");
         iconSettings = MyUtils.createImage(iconsPath);
         imageIconSettings =  new ImageIcon(iconSettings);
+        
+        //Iconul
+        iconsPath = iconsFolder + ReadOnlyConfiguration.getString("TOOLBAR_FEREASTRA_ICONS_EXPORT");
+        iconExport = MyUtils.createImage(iconsPath);
+        imageIconExport =  new ImageIcon(iconExport);
+        
+        //Iconul
+        iconsPath = iconsFolder + ReadOnlyConfiguration.getString("TOOLBAR_FEREASTRA_ICONS_EXPORT");
+        iconFasta = MyUtils.createImage(iconsPath);
+        imageIconFasta =  new ImageIcon(iconFasta);
     }
     
     /**
@@ -126,6 +142,14 @@ public class JToolbarFereastraIcons implements IGlobalClass {
             case (SETTINGS):
                 if(iconSaveas != null) {
                     return imageIconSettings;
+                } else return noIcon;
+            case (EXPORT):
+                if(iconExport != null) {
+                    return imageIconExport;
+                } else return noIcon;
+            case (FASTA):
+                if(iconFasta != null) {
+                    return imageIconFasta;
                 } else return noIcon;
             default:
                 return noIcon;

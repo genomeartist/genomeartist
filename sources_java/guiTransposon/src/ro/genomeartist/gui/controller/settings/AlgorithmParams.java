@@ -73,6 +73,8 @@ public class AlgorithmParams {
     private static final String NAME_NUCLEU = "COMPUNERE_LUNGIME_MINIMA_NUCLEU";
     private static final String NAME_SOLUTII = "COMPUNERE_NUMAR_MAXIM_SOLUTII";
     private static final String NAME_BONUS_COMPUNERE = "COMPUNERE_GENOM_TRANSPOSON_BONUS";
+    private static final String NAME_LENGTH_SEQEXTRACT = "LUNGIME EXRACTIE SECVENTA";
+    private static final String NAME_LENGTH_TOLERANCE = "LUNGIME TOLERANCE";
 
     //Constante pentru valorile standard ale parametrilor
     private static final ExpansionParameters EXPANSION_SHORT = 
@@ -96,6 +98,8 @@ public class AlgorithmParams {
     private int nucleu;
     private int solutii;
     private boolean bonusCompunere;
+    private int lengthSeqExtract;
+    private int lengthTolerance;
 
     /**~~~~~~~~~~~~~~~~~~~~~
      *       Getteri 
@@ -174,6 +178,22 @@ public class AlgorithmParams {
      */
     public boolean isBonusCompunere() {
         return bonusCompunere;
+    }   
+    
+        /**
+     * Getter
+     * @return 
+     */
+    public int getLengthSeqExtract() {
+        return lengthSeqExtract;
+    }
+    
+    /**
+     * Getter
+     * @return 
+     */
+    public int getLengthTolerance() {
+        return lengthTolerance;
     }
 
     /**~~~~~~~~~~~~~~~~~~~~~
@@ -283,6 +303,32 @@ public class AlgorithmParams {
             return false;
         }
     }
+    
+    /**
+     * Setter
+     * @param offsetZero 
+     */
+    public boolean setLengthSeqExtract(int lengthSeqExtract) {
+        if (this.lengthSeqExtract != lengthSeqExtract) {
+            this.lengthSeqExtract = lengthSeqExtract;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Setter
+     * @param offsetZero 
+     */
+    public boolean setLengthTolerance(int lengthTolerance) {
+        if (this.lengthTolerance != lengthTolerance) {
+            this.lengthTolerance = lengthTolerance;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *      Metode de persistenta
@@ -349,6 +395,12 @@ public class AlgorithmParams {
                         if (bool == BOOL_FALSE)
                             bonusCompunere = false;
                         else bonusCompunere = true;
+                    } else
+                    if (NAME_LENGTH_SEQEXTRACT.equals(key)) {
+                        lengthSeqExtract = Integer.parseInt(value);
+                    }
+                    if (NAME_LENGTH_TOLERANCE.equals(key)) {
+                        lengthTolerance = Integer.parseInt(value);
                     }
                 }
             }
@@ -410,6 +462,16 @@ public class AlgorithmParams {
                 fileWriter.write(BOOL_TRUE+"");
             else
                 fileWriter.write(BOOL_FALSE+"");
+            fileWriter.newLine();
+            //entry
+            fileWriter.write(NAME_LENGTH_SEQEXTRACT);
+            fileWriter.write(" = ");
+            fileWriter.write(lengthSeqExtract+"");
+            fileWriter.newLine();
+            //entry
+            fileWriter.write(NAME_LENGTH_TOLERANCE);
+            fileWriter.write(" = ");
+            fileWriter.write(lengthTolerance+"");
             fileWriter.newLine();
             //END
             fileWriter.flush();

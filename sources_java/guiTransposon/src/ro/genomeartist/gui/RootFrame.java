@@ -28,6 +28,8 @@ import ro.genomeartist.components.tabbedpane.JDragableTabbedPane;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
 import ro.genomeartist.gui.utils.ReadWriteConfiguration;
 import ro.genomeartist.gui.controller.externalcalls.GenomeArtistFileFilter;
+import ro.genomeartist.gui.controller.externalcalls.MyTableFilter;
+import ro.genomeartist.gui.controller.externalcalls.MyFastaFilter;
 import ro.genomeartist.gui.controller.externalcalls.ExternalLink;
 import ro.genomeartist.gui.controller.query.MainResult;
 import ro.genomeartist.gui.controller.query.SearchQuery;
@@ -57,8 +59,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -117,6 +118,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String NAME_LOAD = "Load";
     private final static String NAME_SAVE_AS = "Save As";
     private final static String NAME_SETTINGS = "Settings";
+    private final static String NAME_EXPORT = "Export Table";
+    private final static String NAME_FASTA = "Export Fasta";
     private final static String NAME_EXIT = "Exit";
 
     private final static String ACTION_SEARCH = NAME_SEARCH.toLowerCase();
@@ -124,6 +127,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String ACTION_LOAD = NAME_LOAD.toLowerCase();
     private final static String ACTION_SAVE_AS = NAME_SAVE_AS.toLowerCase();
     private final static String ACTION_SETTINGS = NAME_SETTINGS.toLowerCase();
+    private final static String ACTION_EXPORT = NAME_EXPORT.toLowerCase();
+    private final static String ACTION_FASTA = NAME_FASTA.toLowerCase();
     private final static String ACTION_EXIT = NAME_EXIT.toLowerCase();
 
     //~~~~~~~~~Obiecte proprii~~~~/
@@ -402,6 +407,18 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             item.addActionListener(menuListener);
             item.setActionCommand(ACTION_SAVE_AS);
         menu1.add(item);
+        
+        //Adaug un element la meniu
+        item= new JMenuItem(NAME_EXPORT);
+            item.addActionListener(menuListener);
+            item.setActionCommand(ACTION_EXPORT);
+        menu1.add(item);
+        
+        //Adaug un element la meniu
+        item= new JMenuItem(NAME_FASTA);
+            item.addActionListener(menuListener);
+            item.setActionCommand(ACTION_FASTA);
+        menu1.add(item);
 
         menu1.addSeparator();
 
@@ -480,6 +497,22 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.SAVEAS));
             button.setFocusable(false);
         localToolBar.add(button);
+        
+        button = new JButton(NAME_EXPORT);
+            button.setActionCommand(ACTION_EXPORT);
+            button.addActionListener(menuListener);
+            button.setToolTipText("Export best results");
+            button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.EXPORT));
+            button.setFocusable(false);
+        localToolBar.add(button);
+        
+        button = new JButton(NAME_FASTA);
+            button.setActionCommand(ACTION_FASTA);
+            button.addActionListener(menuListener);
+            button.setToolTipText("Export TDS as Fasta");
+            button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.FASTA));
+            button.setFocusable(false);
+        localToolBar.add(button);
 
         //Adaug sigla la sfarsit
         JBrandingImages brandingImages = (JBrandingImages) MyGlobalClasses
@@ -523,7 +556,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private JTabbedPane createTabbedPane() {
         JTabbedPane tpane;
         //tpane = new JMyTabbedPane();
-        tpane = new JDragableTabbedPane();
+        tpane = new JDragableTabbedPane();        
         tpane.addChangeListener(tpaneListener);
         //tpane.setTabPlacement(JTabbedPane.LEFT);
         return tpane;
@@ -569,15 +602,20 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 performIndividualSearch(searchQuery);                
             }
         }
+        if(tabbedpane.getTabCount() > 100)
+            tabbedpane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        else
+            tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
     }
 
     /**
      * Lansez actiunea de importare (deschidere)
      */
-    public void fireActionLoad() {
+    public void fireActionLoad() {        
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(RootFrame.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            final File file = fc.getSelectedFile();
+            final File[] files = fc.getSelectedFiles();
 
             //Afisez mesajul de cautare
             glassPane.setMessage(DrawingConstants.TEXT_OPEN_ROW1,
@@ -587,30 +625,38 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             //Lansez cautarea propriu zisa
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    MainResult mainResult = ExternalLink.readResultFile(file);
-                    if (mainResult == null) {
-                        //custom title, error icon
-                        JOptionPane.showMessageDialog(RootFrame.this,
-                            "Error opening file",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                        glassPane.setVisible(false);
-                        return;
-                    } else {
-                        mainResult.backgroundFile = file;
-                        mainResult.isSaved = true;
-                        mainResult.hasBeenModified = false;
+                    for(int i = 0; i < files.length; i++)
+                    {
+                        MainResult mainResult = ExternalLink.readResultFile(files[i]);
+                        if (mainResult == null) {
+                            //custom title, error icon
+                            JOptionPane.showMessageDialog(RootFrame.this,
+                                "Error opening file",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                            glassPane.setVisible(false);
+                            return;
+                        } else {
+                            mainResult.backgroundFile = files[i];
+                            mainResult.isSaved = true;
+                            mainResult.hasBeenModified = false;
 
-                        JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
-                                mainResult);
-                        tabbedpane.add(mainResult.infoQuery.queryName,
-                                resultPane);
-                        tabbedpane.setSelectedComponent(resultPane);
-                        glassPane.setVisible(false);
+                            JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
+                                    mainResult);
+                            tabbedpane.add(mainResult.infoQuery.queryName,
+                                    resultPane);
+                            tabbedpane.setSelectedComponent(resultPane);
+                            if(tabbedpane.getTabCount() > 100)
+                                tabbedpane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                            else
+                                tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                            glassPane.setVisible(false);
+                        }
                     }
                 }
             });
         }
+        fc.setMultiSelectionEnabled(false);
     }
 
     /**
@@ -701,6 +747,85 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             }
         }
     }
+    
+    /**
+     * Lansez actiunea de exportare rezultatele cele mai bune
+     */
+    public void fireActionExport() {
+        ArrayList<String[]> bestResultData = new ArrayList<String[]>();
+        ArrayList<String[]> bestResultsBatch;
+        bestResultData.add(new String[]{"Query", "Genomic Reference Sequence", "Transposon/Mobile Element", "Insertion Coordinate/TGN", "Transposon Coordinate" ,"Hit Gene(s)", "Upstream Gene", "Downstream Gene", "Alignment Score", "TSD", "Outermost Alignment Coordinate", "Possible Artefact"});
+        
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                bestResultsBatch = auxComponent.getBestResultsInsertionData(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance());
+                bestResultData.addAll(bestResultsBatch);
+            }
+        }
+        JFileChooser auxfc = new JFileChooser();
+        auxfc.addChoosableFileFilter(new MyTableFilter());
+        auxfc.setSelectedFile(new File("."+ MyUtils.CSV_EXT));
+        int returnVal = auxfc.showSaveDialog(RootFrame.this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File destination = auxfc.getSelectedFile();
+            if (destination.exists())
+                destination.delete();
+            for(int i = 0; i < bestResultData.size(); i++) {
+                for(int j = 0; j < MyUtils.COLUMNS_NUMBER; j++) {
+                    ExternalLink.writeStringToFile(destination, bestResultData.get(i)[j]+" , ", true);
+                }
+                ExternalLink.writeStringToFile(destination, "\n", true);
+            }        
+        }
+    }
+    
+    /**
+     * Lansez actiunea de exportare a TDS in Fasta
+     */
+    public void fireActionFasta() {
+        ArrayList<String> bestResultData = new ArrayList<String>();
+        String bestResult;
+        int counterReferenceElements = 0;
+        
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                bestResult = auxComponent.getBestResultsTDS(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance(), false);
+                if(bestResult != null) {
+                    bestResult = ">" + auxMainResult.infoQuery.queryName + " (+)\n" + bestResult + "\n";
+                    bestResultData.add(bestResult);
+                    counterReferenceElements++;
+                }
+            }
+        }
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                bestResult = auxComponent.getBestResultsTDS(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance(), true);
+                if(bestResult != null) {
+                    bestResult = ">" + auxMainResult.infoQuery.queryName + " (-)\n" + bestResult + "\n";
+                    bestResultData.add(bestResult);
+                }
+            }
+        }    
+        JFileChooser auxfc = new JFileChooser();
+        auxfc.addChoosableFileFilter(new MyFastaFilter());
+        auxfc.setSelectedFile(new File("."+ MyUtils.FASTA_EXT));
+        int returnVal = auxfc.showSaveDialog(RootFrame.this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File destination = auxfc.getSelectedFile();
+            if (destination.exists())
+                destination.delete();
+            for(int i = 0; i < counterReferenceElements; i++)
+                ExternalLink.writeStringToFile(destination, bestResultData.get(i), true);       
+            for(int i = counterReferenceElements; i < bestResultData.size(); i++)
+                ExternalLink.writeStringToFile(destination, bestResultData.get(i), true);     
+        }
+    }
 
     /**
      * Lansez actiunea de deschidere panou de setari
@@ -730,7 +855,6 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         String outputPath = ReadOnlyConfiguration.getString("FOLDER_OUTPUTS");
         outputPath += searchQuery.getQueryName() + "_" + 
                 MyUtils.getCurrentUTCTimestampInISO8601Format() + ".ga";
-
         File outputFile = new File(outputPath);
         //Fac actiunea in background cu panou de monitorizare
         AbstractProgressCallable callable = ExternalLink.getSearchCallable(searchQuery, outputFile);
@@ -791,6 +915,12 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 } else
                 if (ACTION_SETTINGS.equals(cmd)) {
                     fireActionShowSettings();
+                } else
+                if (ACTION_EXPORT.equals(cmd)) {
+                    fireActionExport();
+                } else
+                if (ACTION_FASTA.equals(cmd)) {
+                    fireActionFasta();
                 } else
                 if (ACTION_EXIT.equals(cmd)) {
                     fireActionExit();
@@ -854,3 +984,4 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
 
 
 }
+
