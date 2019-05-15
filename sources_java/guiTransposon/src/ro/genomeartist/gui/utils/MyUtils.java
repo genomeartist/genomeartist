@@ -55,7 +55,8 @@ public class MyUtils {
     public final static String PDF_EXT = "pdf";
     public final static String CSV_EXT = "csv";
     public final static String ODS_EXT = "ods";
-    public final static int COLUMNS_NUMBER = 9;
+    public final static String FASTA_EXT = "fasta";
+    public final static int COLUMNS_NUMBER = 12;
 
     //Unitati de masura timp
     private static final int MINUTES_2_SECONDS = 60;
