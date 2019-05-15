@@ -35,7 +35,7 @@ import ro.genomeartist.gui.mainpanels.settings.JSettingsPane;
 public class JSettingsDialog extends JTwoButtonAbstractDialog {
     //Constante pentru dimensiuni
     private static final int FRAME_WIDTH = 700;
-    private static final int FRAME_HEIGHT = 500;
+    private static final int FRAME_HEIGHT = 800;
 
     //Constante
     private static final String BUTTON_OK = "    Ok    ";
