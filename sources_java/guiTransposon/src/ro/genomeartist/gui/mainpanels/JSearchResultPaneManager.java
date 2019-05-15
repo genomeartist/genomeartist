@@ -113,8 +113,16 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
      * Exporta cele mai bune rezultate ca tabel
      * @param exportResult
      */
-    public ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult) {
-        return FinalResultExporter.getBestResultsInsertionData(sourceResult);
+    public ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
+        return FinalResultExporter.getBestResultsInsertionData(sourceResult, lengthSeqExtract, lengthTolerance);
+    }
+    
+    /**
+     * Exporta cele mai bune rezultate TDS ca fasta
+     * @param exportResult
+     */
+    public String getBestResultsTDS(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance, boolean referenceStrand) {
+        return FinalResultExporter.getBestResultsTDS(sourceResult, lengthSeqExtract, lengthTolerance, referenceStrand);
     }
 
     /**
