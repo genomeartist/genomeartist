@@ -6,7 +6,6 @@
 package ro.genomeartist.gui.controller.externalcalls;
 
 import ro.genomeartist.gui.utils.MyUtils;
-import ro.genomeartist.gui.utils.MyUtils;
 import java.io.File;
 import javax.swing.filechooser.*;
 
