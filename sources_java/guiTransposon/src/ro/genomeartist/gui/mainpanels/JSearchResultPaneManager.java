@@ -27,6 +27,7 @@ import ro.genomeartist.gui.controller.exporters.FinalResultExporter;
 import ro.genomeartist.gui.mainpanels.finalresult.JFinalResultSetPane;
 import java.awt.BorderLayout;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -118,11 +119,19 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
     }
     
     /**
+     * Exporta cele mai bune rezultate flancatoare ca fasta
+     * @param exportResult
+     */
+    public String getBestResultsFlankingSeq(MainResult sourceResult, boolean useDoubleFlanks, int lengthSeqExtract, int lengthTolerance, String folderPath) throws IOException {
+        return FinalResultExporter.getBestResultsFlankingSeq(sourceResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, folderPath);
+    }
+    
+    /**
      * Exporta cele mai bune rezultate TDS ca fasta
      * @param exportResult
      */
-    public String getBestResultsTDS(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance, boolean referenceStrand) {
-        return FinalResultExporter.getBestResultsTDS(sourceResult, lengthSeqExtract, lengthTolerance, referenceStrand);
+    public String getBestResultsTSD(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
+        return FinalResultExporter.getBestResultsTSD(sourceResult, lengthSeqExtract, lengthTolerance);
     }
 
     /**
@@ -133,3 +142,4 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
         FinalResultExporter.printReport(mainResult, exportResult);
     }
 }
+

@@ -117,8 +117,6 @@ public class JAlgorithmParametersPane extends JPanel {
         public static final int ROW_NUCLEU = 6;
         public static final int ROW_NUMAR_SOLUTII = 7;
         public static final int ROW_BONUS_COMPUNERE = 8;
-        public static final int ROW_LENGTH_SEQEXTRACT = 9;
-        public static final int ROW_LENGTH_TOLERANCE = 10;
 
         /**
          * Constructorul modelului
@@ -129,7 +127,7 @@ public class JAlgorithmParametersPane extends JPanel {
 
         @Override
         public int getRowCount() {
-            return 11;
+            return 9;
         }
 
         @Override
@@ -149,8 +147,6 @@ public class JAlgorithmParametersPane extends JPanel {
                 case ROW_NUCLEU:                return Integer.class;
                 case ROW_NUMAR_SOLUTII:         return Integer.class;               
                 case ROW_BONUS_COMPUNERE:       return Boolean.class;
-                case ROW_LENGTH_SEQEXTRACT:     return Integer.class;
-                case ROW_LENGTH_TOLERANCE:      return Integer.class;
                 default:    assert false; return null;
             }
         }
@@ -167,8 +163,6 @@ public class JAlgorithmParametersPane extends JPanel {
                 case ROW_NUCLEU:                return "Nucleus size";
                 case ROW_NUMAR_SOLUTII:         return "Number of results";               
                 case ROW_BONUS_COMPUNERE:       return null;
-                case ROW_LENGTH_SEQEXTRACT:     return "Length of TSD";
-                case ROW_LENGTH_TOLERANCE:      return "Length of tolerance";
                 default:    assert false; return null;
             }
         }
@@ -195,10 +189,6 @@ public class JAlgorithmParametersPane extends JPanel {
                     return new JTextFieldPropertiesEditor(FIELD_WIDTH);                
                 case ROW_BONUS_COMPUNERE:
                     return new JCheckBoxPropertiesEditor("Give bonus to insertion candidates");
-                case ROW_LENGTH_SEQEXTRACT:
-                    return new JTextFieldPropertiesEditor(FIELD_WIDTH);
-                case ROW_LENGTH_TOLERANCE:
-                    return new JTextFieldPropertiesEditor(FIELD_WIDTH);
                 default:    assert false; return null;
             }
         }
@@ -215,8 +205,6 @@ public class JAlgorithmParametersPane extends JPanel {
                     return new JLabelPropertiesHeader("Advanced extension parameters");
                 case ROW_PICKING_DEPTH:
                     return new JLabelPropertiesHeader("Candidate results");
-                case ROW_LENGTH_SEQEXTRACT:
-                    return new JLabelPropertiesHeader("Export Settings");
                 default:
                     return null;
             }
@@ -302,10 +290,6 @@ public class JAlgorithmParametersPane extends JPanel {
                     return algorithmParams.getSolutii();
                 case ROW_BONUS_COMPUNERE:
                     return algorithmParams.isBonusCompunere();
-                case ROW_LENGTH_SEQEXTRACT:
-                    return algorithmParams.getLengthSeqExtract();
-                case ROW_LENGTH_TOLERANCE:
-                    return algorithmParams.getLengthTolerance();
                 default:    assert false; return null;
             }
         }
@@ -362,14 +346,6 @@ public class JAlgorithmParametersPane extends JPanel {
                 case ROW_BONUS_COMPUNERE:
                     auxBoolean = (Boolean) newValue;
                     hasChanged = algorithmParams.setBonusCompunere(auxBoolean);
-                    break;
-                case ROW_LENGTH_SEQEXTRACT:
-                    auxInteger = (Integer) newValue;
-                    hasChanged = algorithmParams.setLengthSeqExtract(auxInteger);
-                    break;
-                case ROW_LENGTH_TOLERANCE:
-                    auxInteger = (Integer) newValue;
-                    hasChanged = algorithmParams.setLengthTolerance(auxInteger);
                     break;
                 default:
                     hasChanged = false;
