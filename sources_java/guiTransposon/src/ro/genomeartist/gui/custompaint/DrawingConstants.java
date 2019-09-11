@@ -44,6 +44,8 @@ public class DrawingConstants {
     //Culoarea intervalului
     public static final Color COLOR_TRANSPOSON_BORDER = new Color(200, 0, 0);
     public static final Color COLOR_TRANSPOSON_FILL = new Color(255, 200, 200);
+    //Culoarea pozitiei de insertie
+    public static final Color COLOR_INSERTION_POSITION = new Color(50, 190, 50);
     //Culoarea genelor
     public static final Color COLOR_GENE_BORDER = new Color(0, 200, 0);
     public static final Color COLOR_GENE_FILL = new Color(200, 255, 200);
