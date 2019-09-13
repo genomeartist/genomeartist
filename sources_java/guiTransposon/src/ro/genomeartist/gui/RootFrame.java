@@ -59,8 +59,12 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -84,6 +88,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
+import ro.genomeartist.gui.controller.exporters.FinalResultExporter;
+import ro.genomeartist.gui.dialogs.JExportDialog;
+import ro.genomeartist.gui.utils.NaturalOrderComparator;
 
 /**
  *
@@ -118,8 +125,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String NAME_LOAD = "Load";
     private final static String NAME_SAVE_AS = "Save As";
     private final static String NAME_SETTINGS = "Settings";
-    private final static String NAME_EXPORT = "Export Table";
-    private final static String NAME_FASTA = "Export Fasta";
+    private final static String NAME_EXPORT = "Export Data to File";
+    private final static String NAME_EXPORT_FLANKINGSEQ = "Export Flanking Sequences";
     private final static String NAME_EXIT = "Exit";
 
     private final static String ACTION_SEARCH = NAME_SEARCH.toLowerCase();
@@ -128,7 +135,6 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String ACTION_SAVE_AS = NAME_SAVE_AS.toLowerCase();
     private final static String ACTION_SETTINGS = NAME_SETTINGS.toLowerCase();
     private final static String ACTION_EXPORT = NAME_EXPORT.toLowerCase();
-    private final static String ACTION_FASTA = NAME_FASTA.toLowerCase();
     private final static String ACTION_EXIT = NAME_EXIT.toLowerCase();
 
     //~~~~~~~~~Obiecte proprii~~~~/
@@ -413,12 +419,6 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             item.addActionListener(menuListener);
             item.setActionCommand(ACTION_EXPORT);
         menu1.add(item);
-        
-        //Adaug un element la meniu
-        item= new JMenuItem(NAME_FASTA);
-            item.addActionListener(menuListener);
-            item.setActionCommand(ACTION_FASTA);
-        menu1.add(item);
 
         menu1.addSeparator();
 
@@ -501,18 +501,10 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         button = new JButton(NAME_EXPORT);
             button.setActionCommand(ACTION_EXPORT);
             button.addActionListener(menuListener);
-            button.setToolTipText("Export best results");
+            button.setToolTipText("Export Data to File");
             button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.EXPORT));
             button.setFocusable(false);
-        localToolBar.add(button);
-        
-        button = new JButton(NAME_FASTA);
-            button.setActionCommand(ACTION_FASTA);
-            button.addActionListener(menuListener);
-            button.setToolTipText("Export TDS as Fasta");
-            button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.FASTA));
-            button.setFocusable(false);
-        localToolBar.add(button);
+        localToolBar.add(button);                
 
         //Adaug sigla la sfarsit
         JBrandingImages brandingImages = (JBrandingImages) MyGlobalClasses
@@ -747,86 +739,40 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             }
         }
     }
+       
     
     /**
-     * Lansez actiunea de exportare rezultatele cele mai bune
+     * Lansez actiunea de exportare a TSD sau Flanking Sequences in Fasta
      */
     public void fireActionExport() {
-        ArrayList<String[]> bestResultData = new ArrayList<String[]>();
-        ArrayList<String[]> bestResultsBatch;
-        bestResultData.add(new String[]{"Query", "Genomic Reference Sequence", "Transposon/Mobile Element", "Insertion Coordinate/TGN", "Transposon Coordinate" ,"Hit Gene(s)", "Upstream Gene", "Downstream Gene", "Alignment Score", "TSD", "Outermost Alignment Coordinate", "Possible Artefact"});
-        
-        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
-            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
-            MainResult auxMainResult = auxComponent.getMainResult();
-            if(auxMainResult.bestResult != null) {
-                bestResultsBatch = auxComponent.getBestResultsInsertionData(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance());
-                bestResultData.addAll(bestResultsBatch);
+        JMyBoolean isOk = new JMyBoolean();
+        String chromosomeFilePath;
+        int genomeCoordinate;
+        int lengthExtractSeq;
+        int toleranceExtractSeq;
+        final JExportDialog flankingSequencesDialog = new JExportDialog(
+                RootFrame.this, "Export to FASTA", true, isOk);
+        flankingSequencesDialog.setVisible(true);
+
+        if(isOk.isTrue()) {
+            lengthExtractSeq = flankingSequencesDialog.getLengthExtractSeq();
+            toleranceExtractSeq = flankingSequencesDialog.getToleranceExtractSeq();
+            if(flankingSequencesDialog.getIsChooseButtonSelected()) {
+                chromosomeFilePath = flankingSequencesDialog.getChromosomeFilePath();
+                genomeCoordinate = flankingSequencesDialog.getGenomeCoordinate();
+                exportSequenceAtCoordinate(chromosomeFilePath, genomeCoordinate, lengthExtractSeq);
             }
-        }
-        JFileChooser auxfc = new JFileChooser();
-        auxfc.addChoosableFileFilter(new MyTableFilter());
-        auxfc.setSelectedFile(new File("."+ MyUtils.CSV_EXT));
-        int returnVal = auxfc.showSaveDialog(RootFrame.this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File destination = auxfc.getSelectedFile();
-            if (destination.exists())
-                destination.delete();
-            for(int i = 0; i < bestResultData.size(); i++) {
-                for(int j = 0; j < MyUtils.COLUMNS_NUMBER; j++) {
-                    ExternalLink.writeStringToFile(destination, bestResultData.get(i)[j]+" , ", true);
-                }
-                ExternalLink.writeStringToFile(destination, "\n", true);
-            }        
+            if(flankingSequencesDialog.getIsTSDButtonSelected())
+                exportSequencesAtBorder(true, false, lengthExtractSeq, toleranceExtractSeq);
+            if(flankingSequencesDialog.getIsFlankingButtonSelected())
+                exportSequencesAtBorder(false, false, lengthExtractSeq, toleranceExtractSeq);
+            if(flankingSequencesDialog.getIsTwoFlanksButtonSelected())
+                exportSequencesAtBorder(false, true, lengthExtractSeq, toleranceExtractSeq);
+            if(flankingSequencesDialog.getIsTableButtonSelected())
+                exportTable(lengthExtractSeq, toleranceExtractSeq);
         }
     }
     
-    /**
-     * Lansez actiunea de exportare a TDS in Fasta
-     */
-    public void fireActionFasta() {
-        ArrayList<String> bestResultData = new ArrayList<String>();
-        String bestResult;
-        int counterReferenceElements = 0;
-        
-        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
-            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
-            MainResult auxMainResult = auxComponent.getMainResult();
-            if(auxMainResult.bestResult != null) {
-                bestResult = auxComponent.getBestResultsTDS(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance(), false);
-                if(bestResult != null) {
-                    bestResult = ">" + auxMainResult.infoQuery.queryName + " (+)\n" + bestResult + "\n";
-                    bestResultData.add(bestResult);
-                    counterReferenceElements++;
-                }
-            }
-        }
-        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
-            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
-            MainResult auxMainResult = auxComponent.getMainResult();
-            if(auxMainResult.bestResult != null) {
-                bestResult = auxComponent.getBestResultsTDS(auxMainResult, generalSettings.algorithmParams.getLengthSeqExtract(), generalSettings.algorithmParams.getLengthTolerance(), true);
-                if(bestResult != null) {
-                    bestResult = ">" + auxMainResult.infoQuery.queryName + " (-)\n" + bestResult + "\n";
-                    bestResultData.add(bestResult);
-                }
-            }
-        }    
-        JFileChooser auxfc = new JFileChooser();
-        auxfc.addChoosableFileFilter(new MyFastaFilter());
-        auxfc.setSelectedFile(new File("."+ MyUtils.FASTA_EXT));
-        int returnVal = auxfc.showSaveDialog(RootFrame.this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File destination = auxfc.getSelectedFile();
-            if (destination.exists())
-                destination.delete();
-            for(int i = 0; i < counterReferenceElements; i++)
-                ExternalLink.writeStringToFile(destination, bestResultData.get(i), true);       
-            for(int i = counterReferenceElements; i < bestResultData.size(); i++)
-                ExternalLink.writeStringToFile(destination, bestResultData.get(i), true);     
-        }
-    }
-
     /**
      * Lansez actiunea de deschidere panou de setari
      */
@@ -880,6 +826,138 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         }
     }
     
+    /**
+     * fuctie petru salvare in fisier fasta sau csv
+     */
+    public void saveToFile(String filetype, ArrayList<String[]> tableData, ArrayList<String> fastaData) {
+        JFileChooser auxfc = new JFileChooser();
+        if(filetype.equals(MyUtils.CSV_EXT))
+            auxfc.addChoosableFileFilter(new MyTableFilter());
+        if(filetype.equals(MyUtils.FASTA_EXT))
+            auxfc.addChoosableFileFilter(new MyFastaFilter());
+        auxfc.setSelectedFile(new File("."+ filetype));
+        int returnVal = auxfc.showSaveDialog(RootFrame.this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File destination = auxfc.getSelectedFile();
+            if (destination.exists())
+                destination.delete();
+            try {
+                destination.createNewFile();
+            }
+            catch(IOException e) {}                    
+            if(filetype.equals(MyUtils.CSV_EXT)) {
+                for(int i = 0; i < tableData.size(); i++) {
+                    for(int j = 0; j < MyUtils.COLUMNS_NUMBER; j++) {
+                        ExternalLink.writeStringToFile(destination, tableData.get(i)[j]+" , ", true);
+                    }
+                ExternalLink.writeStringToFile(destination, "\n", true);
+                }
+            }
+            if(filetype.equals(MyUtils.FASTA_EXT)) {
+                int typeMinus = 0, typePlus = fastaData.size()-1;
+                String aux;
+                while(typeMinus < typePlus) {
+                    if(fastaData.get(typeMinus).contains("(-)"))
+                    {
+                        aux = fastaData.get(typeMinus);
+                        fastaData.set(typeMinus, fastaData.get(typePlus));
+                        fastaData.set(typePlus, aux);
+                        typePlus--;
+                    }
+                    else
+                        typeMinus++;
+                }
+                int counter = 0;
+                for(int i = 0; i < fastaData.size(); i++) {
+                    if(fastaData.get(i).contains("(-)"))
+                        break;
+                    counter++;
+                }
+                ArrayList<String> plusArray = new ArrayList<String>(fastaData.subList(0, counter));
+                ArrayList<String> minusArray = new ArrayList<String>(fastaData.subList(counter, fastaData.size()));
+                Collections.sort(plusArray, new NaturalOrderComparator(true));
+                Collections.sort(minusArray, new NaturalOrderComparator(true));
+                plusArray.addAll(minusArray);
+                for(int i = 0; i < plusArray.size(); i++)
+                    ExternalLink.writeStringToFile(destination, plusArray.get(i), true);     
+            }
+        }
+    }
+    
+    /**
+     * Lansez actiunea de exportare rezultatele cele mai bune
+     */
+    public void exportTable(int lengthTSD, int lengthTolerance) {
+        ArrayList<String[]> bestResultData = new ArrayList<String[]>();
+        ArrayList<String[]> bestResultsBatch;
+        bestResultData.add(new String[]{"Query", "Genomic Reference Sequence", "Transposon/Mobile Element", "Insertion Coordinate/TGN", "Transposon Coordinate" ,"Hit Gene(s)", "Upstream Gene", "Downstream Gene", "Alignment Score", "TSD", "Outermost Alignment Coordinate", "Possible Artefact"});
+        
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                bestResultsBatch = auxComponent.getBestResultsInsertionData(auxMainResult, lengthTSD, lengthTolerance);
+                bestResultData.addAll(bestResultsBatch);
+            }
+        }
+        saveToFile(MyUtils.CSV_EXT, bestResultData, null);
+    }
+    
+    /*
+    / functie pt entragerea flanking sequeces in fisier .raw de la border-ulfiecarui Best Result din taburi
+    */
+    private void exportSequencesAtBorder(boolean useTSD, boolean useDoubleFlanks, int lengthSeqExtract, int lengthTolerance) {
+        ArrayList<String> bestResultData = new ArrayList<String>();
+        String bestResult;
+        String folderRaw = ReadOnlyConfiguration.getString("FOLDER_RAW");
+        
+        for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
+            JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
+            MainResult auxMainResult = auxComponent.getMainResult();
+            if(auxMainResult.bestResult != null) {
+                if(useTSD)
+                    bestResult = auxComponent.getBestResultsTSD(auxMainResult, lengthSeqExtract, lengthTolerance);
+                else {
+                    try {
+                        bestResult = auxComponent.getBestResultsFlankingSeq(auxMainResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, folderRaw);
+                    } catch (IOException e) {
+                        JOptionPane.showMessageDialog(RootFrame.this,
+                                    "Raw file not found" + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+                        bestResult = null;
+                        return;
+                    }
+                }
+                if(bestResult != null) {
+                    bestResult = ">" + auxMainResult.infoQuery.queryName + bestResult + "\n";
+                    bestResultData.add(bestResult);
+                }
+            }
+        }
+        saveToFile(MyUtils.FASTA_EXT, null, bestResultData);        
+    }
+    
+    /*
+    / functie pentru extragerea flanking sequences din fisier .raw la coordonata specificata
+    */
+    private void exportSequenceAtCoordinate(String rawFilePath, int coordinate, int sideLengthExtract) {
+        ArrayList<String> containerList = new ArrayList<String>();
+        String readSequence;
+        try {
+            readSequence = FinalResultExporter.readFromRawFile(rawFilePath, coordinate, sideLengthExtract, sideLengthExtract);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(RootFrame.this,
+                                "Error","Error",JOptionPane.ERROR_MESSAGE);
+            readSequence = null;
+            return;   
+        }
+        if(readSequence == null)
+            JOptionPane.showMessageDialog(RootFrame.this,
+                                "Coordinate larger than file size","Error",JOptionPane.ERROR_MESSAGE);               
+        readSequence = ">" + rawFilePath + "-" + Integer.toString(coordinate) + " (+)\n" + readSequence + "\n";            
+        containerList.add(readSequence);
+        saveToFile(MyUtils.FASTA_EXT, null, containerList);
+    }
+    
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
     //            Controllerele pentru actiuni              /
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
@@ -918,9 +996,6 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 } else
                 if (ACTION_EXPORT.equals(cmd)) {
                     fireActionExport();
-                } else
-                if (ACTION_FASTA.equals(cmd)) {
-                    fireActionFasta();
                 } else
                 if (ACTION_EXIT.equals(cmd)) {
                     fireActionExit();
@@ -984,4 +1059,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
 
 
 }
+
+
+
 
