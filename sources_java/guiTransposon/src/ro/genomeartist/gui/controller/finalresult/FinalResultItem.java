@@ -240,7 +240,9 @@ public class FinalResultItem implements ICanPaint {
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
         
         //Calculez pozitia de insertie
-        IntervalMappingSet filteredIntervalMappingSet = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), Integer.MAX_VALUE);
+        FinalResultExporter.FilteredSetWrapper filteredStWrapper = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), Integer.MAX_VALUE);
+        IntervalMappingSet filteredIntervalMappingSet = filteredStWrapper.intervalSet;
+        int filteredSetIndex = filteredStWrapper.interalIndex;
         int[] codifiedInsertionPosition = FinalResultExporter.getInsertionPosition(filteredIntervalMappingSet);
 
         //Iau fiecare interval si il desenez
@@ -430,8 +432,7 @@ public class FinalResultItem implements ICanPaint {
                 localX = intervalLeft + textMarkerWidth;
                 localY = DrawingConstants.MARGIN_TOP + 3 * lineHeight;
                 oldFont = g2d.getFont();
-                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])
-                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                if((codifiedInsertionPosition[3] != -1 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == filteredSetIndex + codifiedInsertionPosition[1])) {
                     g2d.setColor(colorInsertionPosition);                    
                     g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
                 }
@@ -450,8 +451,7 @@ public class FinalResultItem implements ICanPaint {
                 localX = intervalRight - auxInt - textMarkerWidth;
                 localY = DrawingConstants.MARGIN_TOP + 3 * lineHeight;
                 oldFont = g2d.getFont();                
-                if((codifiedInsertionPosition[3] == 0 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])
-                || (codifiedInsertionPosition[3] == 1 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == codifiedInsertionPosition[1])) {
+                if((codifiedInsertionPosition[3] != -1 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == filteredSetIndex + codifiedInsertionPosition[1])) {
                     g2d.setColor(colorInsertionPosition);
                     g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
                 }
@@ -685,3 +685,5 @@ public class FinalResultItem implements ICanPaint {
         this.score = score;
     }
 }
+
+
