@@ -201,6 +201,7 @@ public class FinalResultExporter {
         int i = 0;
         int maxValue;
         int maxIndex = 0;
+        int minCoordinateLimit = 10;
         ArrayList<Integer> maxCoordinates = new ArrayList<Integer>();
         // Pune fiecare insula de intervale separate prin max lengthTolerance intr-un element separat din ArrayList-ul intervalClusters
         while(i < inputSet.size()) {
@@ -226,13 +227,13 @@ public class FinalResultExporter {
             maxValue = 0;
             for(int k = 0; k < intervalClusters.get(j).size(); k++) {               
                 if(k != 0) {
-                    if(intervalClusters.get(j).elementAt(k).getPozitieStartGenom() == 1)
+                    if(intervalClusters.get(j).elementAt(k).getPozitieStartGenom() <= minCoordinateLimit)
                         return new FilteredSetWrapper(intervalClusters.get(j), j);
                     if(intervalClusters.get(j).elementAt(k).getPozitieStartGenom() > maxValue)
                         maxValue = intervalClusters.get(j).elementAt(k).getPozitieStartGenom(); 
                 }
                 if(k != intervalClusters.get(j).size()-1) {
-                    if(intervalClusters.get(j).elementAt(k).getPozitieStopGenom() == 1)
+                    if(intervalClusters.get(j).elementAt(k).getPozitieStopGenom() <= minCoordinateLimit)
                         return new FilteredSetWrapper(intervalClusters.get(j), j);
                     if(intervalClusters.get(j).elementAt(k).getPozitieStopGenom() > maxValue)
                         maxValue = intervalClusters.get(j).elementAt(k).getPozitieStopGenom();                    
@@ -255,6 +256,7 @@ public class FinalResultExporter {
      */
     public static int[] getInsertionPosition(IntervalMappingSet intervalMappingSet) {
         String conformation = new String();
+        int minCoordinateLimit = 10;
         int[] codifiedInsertionPosition = new int[4];
         if(intervalMappingSet.size() == 2) {
             // Cazul transpozon-genom sau genom-stranspozon
@@ -265,9 +267,9 @@ public class FinalResultExporter {
                 conformation = "Right Transposon";
             // Cazul transpozon-transpozon
             else if(intervalMappingSet.elementAt(0).isTransposon() && intervalMappingSet.elementAt(1).isTransposon()) {
-                if(intervalMappingSet.elementAt(0).getPozitieStopGenom() == 1)
+                if(intervalMappingSet.elementAt(0).getPozitieStopGenom() <= minCoordinateLimit)
                     conformation = "Left Transposon";
-                else if(intervalMappingSet.elementAt(1).getPozitieStartGenom() == 1)
+                else if(intervalMappingSet.elementAt(1).getPozitieStartGenom() <= minCoordinateLimit)
                     conformation = "Right Transposon";
                 else if(intervalMappingSet.elementAt(0).getPozitieStopGenom() > intervalMappingSet.elementAt(1).getPozitieStartGenom())
                     conformation = "Left Transposon";
@@ -290,9 +292,9 @@ public class FinalResultExporter {
             // cazul transpozon-genom-transpozon
             if(intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {
                 codifiedInsertionPosition[1] = 1;//GenomeItem = intervalMappingSet.elementAt(1);                
-                if(intervalMappingSet.elementAt(0).getPozitieStopGenom() == 1)
+                if(intervalMappingSet.elementAt(0).getPozitieStopGenom() <= minCoordinateLimit)
                     conformation = "Left Transposon";
-                else if(intervalMappingSet.elementAt(2).getPozitieStartGenom() == 1)
+                else if(intervalMappingSet.elementAt(2).getPozitieStartGenom() <= minCoordinateLimit)
                     conformation = "Right Transposon";
                 else if(intervalMappingSet.elementAt(0).getPozitieStopGenom() > intervalMappingSet.elementAt(2).getPozitieStartGenom())
                     conformation = "Left Transposon";
@@ -300,13 +302,13 @@ public class FinalResultExporter {
                     conformation = "Right Transposon";                
             }
             if(intervalMappingSet.elementAt(0).isTransposon() && intervalMappingSet.elementAt(1).isTransposon() && !intervalMappingSet.elementAt(2).isTransposon()) {
-                if(intervalMappingSet.elementAt(1).getPozitieStartGenom() == 1)
+                if(intervalMappingSet.elementAt(1).getPozitieStartGenom() <= minCoordinateLimit)
                     conformation = "Center-left Transposon";
-                else if(intervalMappingSet.elementAt(1).getPozitieStopGenom() == 1)
+                else if(intervalMappingSet.elementAt(1).getPozitieStopGenom() <= minCoordinateLimit)
                     conformation = "Center-right Transposon";
                 else if(intervalMappingSet.elementAt(1).getPozitieStartGenom() > intervalMappingSet.elementAt(1).getPozitieStopGenom()) {
                     if(intervalMappingSet.elementAt(0).getPozitieStopGenom() > intervalMappingSet.elementAt(1).getPozitieStartGenom()
-                    || intervalMappingSet.elementAt(0).getPozitieStopGenom() == 1)
+                    || intervalMappingSet.elementAt(0).getPozitieStopGenom() <= minCoordinateLimit)
                         conformation = "Left Transposon";
                     else
                         conformation = "Center-left Transposon";
@@ -315,13 +317,13 @@ public class FinalResultExporter {
                     conformation = "Center-right Transposon";
             }
             if(!intervalMappingSet.elementAt(0).isTransposon() && intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {
-                if(intervalMappingSet.elementAt(1).getPozitieStartGenom() == 1)
+                if(intervalMappingSet.elementAt(1).getPozitieStartGenom() <= minCoordinateLimit)
                     conformation = "Center-left Transposon";
-                else if(intervalMappingSet.elementAt(1).getPozitieStopGenom() == 1)
+                else if(intervalMappingSet.elementAt(1).getPozitieStopGenom() <= minCoordinateLimit)
                     conformation = "Center-right Transposon";
                 else if(intervalMappingSet.elementAt(1).getPozitieStopGenom() > intervalMappingSet.elementAt(1).getPozitieStartGenom()) {
                     if(intervalMappingSet.elementAt(2).getPozitieStartGenom() > intervalMappingSet.elementAt(1).getPozitieStopGenom()
-                    || intervalMappingSet.elementAt(2).getPozitieStartGenom() == 1)
+                    || intervalMappingSet.elementAt(2).getPozitieStartGenom() <= minCoordinateLimit)
                         conformation = "Right Transposon";
                     else
                         conformation = "Center-right Transposon";
@@ -734,4 +736,5 @@ public class FinalResultExporter {
         // </editor-fold>
     }
 }
+
 
