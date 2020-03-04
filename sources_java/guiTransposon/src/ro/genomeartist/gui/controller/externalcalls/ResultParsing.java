@@ -85,7 +85,7 @@ public class ResultParsing {
             //Citesc best result
             resultFile.seek(offsetBestResult);
             int bestResult = littleEndianToBigEndian(resultFile.readInt());
-            System.out.println("bestResult="+bestResult);
+            //System.out.println("bestResult="+bestResult);
 
             //Compun rezultatul final
             mainResult.infoQuery = infoQuery;
@@ -506,3 +506,4 @@ public class ResultParsing {
             System.out.println("erorr");
     }
 }
+
