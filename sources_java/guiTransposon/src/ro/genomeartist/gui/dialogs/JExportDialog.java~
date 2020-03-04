@@ -38,7 +38,7 @@ import ro.genomeartist.gui.utils.JMyBoolean;
 public class JExportDialog extends JTwoButtonAbstractDialog {
     //Constante pentru dimensiuni
     private static final int FRAME_WIDTH = 600;
-    private static final int FRAME_HEIGHT = 380;
+    private static final int FRAME_HEIGHT = 350;
 
     //Constante
     private static final String BUTTON_OK = "    Ok    ";
@@ -47,15 +47,15 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     //Managerii
     private IGlobalManager globalManager;
 
-    private JExportPane exportPane;
+    private JExportPane flankingSequencesPane;
     
     private JMyBoolean isOk;
     
     private int genomeCoordinate;
     private int lengthExtractSeq;
     private int toleranceExtractSeq;
-    private double consensusTreshold;
     private boolean useBorderCoordinate;
+    private String chromosomeFilename;
 
     /**
      * Dialog de afisare partial result
@@ -74,8 +74,8 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
         this.setTextCancel(BUTTON_CANCEL);
         setResizable(true);
 
-        exportPane = new JExportPane();
-        this.setCenterComponent(exportPane);
+        flankingSequencesPane = new JExportPane();
+        this.setCenterComponent(flankingSequencesPane);
         
         //Set it's location
         setLocationRelativeTo(globalManager.getTheRootFrame());
@@ -90,10 +90,9 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
      * Lansez actiunea OK
      */
     public void fireActionOk() {
-        String coordinateText = exportPane.getGenomeCoordinate();
-        String lengthExtractSeqText = exportPane.getLengthExtractSeq();
-        String toleranceExtractSeqText = exportPane.getToleranceExtractSeq();
-        String consensusTresholdText = exportPane.getConsensusTreshold();
+        String coordinateText = flankingSequencesPane.getGenomeCoordinate();
+        String lengthExtractSeqText = flankingSequencesPane.getLengthExtractSeq();
+        String toleranceExtractSeqText = flankingSequencesPane.getToleranceExtractSeq();
         try {
             lengthExtractSeq = Integer.parseInt(lengthExtractSeqText);
         } catch(NumberFormatException e) { 
@@ -110,17 +109,7 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
             toleranceExtractSeq = -1;
             isOk.setFalse();
         }
-        if(exportPane.getIsConsensusButtonSelected()) {
-            try {
-                consensusTreshold = Integer.parseInt(consensusTresholdText);
-            } catch(NumberFormatException e) { 
-                JOptionPane.showMessageDialog(JExportDialog.this,
-                                "Consensus Treshold must be a percentage","Error",JOptionPane.ERROR_MESSAGE);
-                consensusTreshold = -1;
-                isOk.setFalse();
-            }            
-        }
-        if(exportPane.getIsChooseButtonSelected()) {
+        if(flankingSequencesPane.getIsChooseButtonSelected()) {
             useBorderCoordinate = false;           
             try {
                 genomeCoordinate = Integer.parseInt(coordinateText);
@@ -129,10 +118,7 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
                                 "Coordinate Value must be an Integer","Error",JOptionPane.ERROR_MESSAGE);
                 genomeCoordinate = -1;
                 isOk.setFalse();
-            }
-            if(exportPane.getChromosomeFilepath() == null)
-                JOptionPane.showMessageDialog(JExportDialog.this,
-                                "No Chromosome selected","Error",JOptionPane.ERROR_MESSAGE);
+            }            
         }
         else {
             useBorderCoordinate = true;            
@@ -149,47 +135,39 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     }
     
     public String getChromosomeFilePath() {
-        return exportPane.getChromosomeFilepath();
+        return flankingSequencesPane.getChromosomeFilepath();
     }
     
     public int getGenomeCoordinate() {
-        return Integer.parseInt(exportPane.getGenomeCoordinate());
+        return Integer.parseInt(flankingSequencesPane.getGenomeCoordinate());
     }
     
     public int getLengthExtractSeq() {
-        return Integer.parseInt(exportPane.getLengthExtractSeq());
+        return Integer.parseInt(flankingSequencesPane.getLengthExtractSeq());
     }
     
     public int getToleranceExtractSeq() {
         return toleranceExtractSeq;
     }
     
-    public double getConsensusTreshold() {
-        return consensusTreshold;
-    }
-    
     public boolean getIsChooseButtonSelected() {
-        return exportPane.getIsChooseButtonSelected();
+        return flankingSequencesPane.getIsChooseButtonSelected();
     }
     
     public boolean getIsTableButtonSelected() {
-        return exportPane.getIsTableButtonSelected();
+        return flankingSequencesPane.getIsTableButtonSelected();
     }
     
     public boolean getIsTSDButtonSelected() {
-        return exportPane.getIsTSDButtonSelected();
+        return flankingSequencesPane.getIsTSDButtonSelected();
     }
     
     public boolean getIsFlankingButtonSelected() {
-        return exportPane.getIsFlankingButtonSelected();
+        return flankingSequencesPane.getIsFlankingButtonSelected();
     }
     
     public boolean getIsTwoFlanksButtonSelected() {
-        return exportPane.getIsTwoFlanksButtonSelected();
-    }
-    
-    public boolean getIsConsensusButtonSelected() {
-        return exportPane.getIsConsensusButtonSelected();
+        return flankingSequencesPane.getIsTwoFlanksButtonSelected();
     }
 
 }

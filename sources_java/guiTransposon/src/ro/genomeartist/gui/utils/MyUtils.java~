@@ -425,7 +425,6 @@ public class MyUtils {
                                         percentages[2] >= treshold ? 1 : 0, percentages[3] >= treshold ? 1 : 0));
             consensus.set(0, consensus.get(0).concat(patternMapping.get(percentageChecks)));
         }
-        consensus.set(0, ">IUPAC-consensus-sequence\n".concat(consensus.get(0)));
         return consensus;
     }
 
@@ -441,5 +440,4 @@ public class MyUtils {
         System.out.println(result);
     }
 }
-
 

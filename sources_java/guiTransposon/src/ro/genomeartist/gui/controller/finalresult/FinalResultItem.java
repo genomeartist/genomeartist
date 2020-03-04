@@ -240,9 +240,9 @@ public class FinalResultItem implements ICanPaint {
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
         
         //Calculez pozitia de insertie
-        FinalResultExporter.FilteredSetWrapper filteredStWrapper = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), Integer.MAX_VALUE);
+        FinalResultExporter.FilteredSetWrapper filteredStWrapper = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), 3);
         IntervalMappingSet filteredIntervalMappingSet = filteredStWrapper.intervalSet;
-        int filteredSetIndex = filteredStWrapper.interalIndex;
+        int filteredSetIndex = filteredStWrapper.intervalIndex;
         int[] codifiedInsertionPosition = FinalResultExporter.getInsertionPosition(filteredIntervalMappingSet);
 
         //Iau fiecare interval si il desenez
@@ -425,7 +425,7 @@ public class FinalResultItem implements ICanPaint {
             textMarkerWidth = DrawingConstants.TEXT_MARKER_WIDTH + DrawingConstants.LINEWIDTH;
             
             //Plasez textul de mapare genom
-             auxString = intervalMappingItem.getPozitieStartGenom() + "";
+            auxString = intervalMappingItem.getPozitieStartGenom() + "";
             auxInt = fontMetrics.stringWidth(auxString);
             sumInt = auxInt+textMarkerWidth+indexWidth/2;
             if (sumInt < intervalWidth/2) {
@@ -438,6 +438,13 @@ public class FinalResultItem implements ICanPaint {
                 }
                 else
                     g2d.setColor(colorIntervalBorder);
+                g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
+            } else if((codifiedInsertionPosition[3] != -1 && codifiedInsertionPosition[2] == 1 && indexInterval-2 == filteredSetIndex + codifiedInsertionPosition[1])) {
+                localX = intervalLeft + textMarkerWidth;
+                localY = DrawingConstants.MARGIN_TOP + 4 * lineHeight;
+                g2d.setColor(colorInsertionPosition);                    
+                g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
                 g2d.drawString(auxString, localX, localY);
                 g2d.setFont(oldFont);
             }
@@ -457,6 +464,13 @@ public class FinalResultItem implements ICanPaint {
                 }
                 else
                     g2d.setColor(colorIntervalBorder);
+                g2d.drawString(auxString, localX, localY);
+                g2d.setFont(oldFont);
+            } else if((codifiedInsertionPosition[3] != -1 && codifiedInsertionPosition[2] == 0 && indexInterval-2 == filteredSetIndex + codifiedInsertionPosition[1])) {
+                localX = intervalRight - auxInt - textMarkerWidth;
+                localY = DrawingConstants.MARGIN_TOP + 4 * lineHeight;
+                g2d.setColor(colorInsertionPosition);
+                g2d.setFont(oldFont.deriveFont(Font.BOLD, oldFont.getSize() + 1));
                 g2d.drawString(auxString, localX, localY);
                 g2d.setFont(oldFont);
             }
@@ -685,5 +699,7 @@ public class FinalResultItem implements ICanPaint {
         this.score = score;
     }
 }
+
+
 
 
