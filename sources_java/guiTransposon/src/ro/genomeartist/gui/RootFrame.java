@@ -750,25 +750,27 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         int genomeCoordinate;
         int lengthExtractSeq;
         int toleranceExtractSeq;
-        final JExportDialog flankingSequencesDialog = new JExportDialog(
+        final JExportDialog exportDialog = new JExportDialog(
                 RootFrame.this, "Export to FASTA", true, isOk);
-        flankingSequencesDialog.setVisible(true);
+        exportDialog.setVisible(true);
 
         if(isOk.isTrue()) {
-            lengthExtractSeq = flankingSequencesDialog.getLengthExtractSeq();
-            toleranceExtractSeq = flankingSequencesDialog.getToleranceExtractSeq();
-            if(flankingSequencesDialog.getIsChooseButtonSelected()) {
-                chromosomeFilePath = flankingSequencesDialog.getChromosomeFilePath();
-                genomeCoordinate = flankingSequencesDialog.getGenomeCoordinate();
+            lengthExtractSeq = exportDialog.getLengthExtractSeq();
+            toleranceExtractSeq = exportDialog.getToleranceExtractSeq();
+            boolean toggleConsensus = exportDialog.getIsConsensusButtonSelected();
+            double consensusTreshold = exportDialog.getConsensusTreshold();
+            if(exportDialog.getIsChooseButtonSelected()) {
+                chromosomeFilePath = exportDialog.getChromosomeFilePath();
+                genomeCoordinate = exportDialog.getGenomeCoordinate();
                 exportSequenceAtCoordinate(chromosomeFilePath, genomeCoordinate, lengthExtractSeq);
-            }
-            if(flankingSequencesDialog.getIsTSDButtonSelected())
-                exportSequencesAtBorder(true, false, lengthExtractSeq, toleranceExtractSeq);
-            if(flankingSequencesDialog.getIsFlankingButtonSelected())
-                exportSequencesAtBorder(false, false, lengthExtractSeq, toleranceExtractSeq);
-            if(flankingSequencesDialog.getIsTwoFlanksButtonSelected())
-                exportSequencesAtBorder(false, true, lengthExtractSeq, toleranceExtractSeq);
-            if(flankingSequencesDialog.getIsTableButtonSelected())
+            }            
+            if(exportDialog.getIsTSDButtonSelected())
+                exportSequencesAtBorder(true, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+            if(exportDialog.getIsFlankingButtonSelected())
+                exportSequencesAtBorder(false, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+            if(exportDialog.getIsTwoFlanksButtonSelected())
+                exportSequencesAtBorder(false, true, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+            if(exportDialog.getIsTableButtonSelected())
                 exportTable(lengthExtractSeq, toleranceExtractSeq);
         }
     }
@@ -854,32 +856,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 }
             }
             if(filetype.equals(MyUtils.FASTA_EXT)) {
-                int typeMinus = 0, typePlus = fastaData.size()-1;
-                String aux;
-                while(typeMinus < typePlus) {
-                    if(fastaData.get(typeMinus).contains("(-)"))
-                    {
-                        aux = fastaData.get(typeMinus);
-                        fastaData.set(typeMinus, fastaData.get(typePlus));
-                        fastaData.set(typePlus, aux);
-                        typePlus--;
-                    }
-                    else
-                        typeMinus++;
-                }
-                int counter = 0;
-                for(int i = 0; i < fastaData.size(); i++) {
-                    if(fastaData.get(i).contains("(-)"))
-                        break;
-                    counter++;
-                }
-                ArrayList<String> plusArray = new ArrayList<String>(fastaData.subList(0, counter));
-                ArrayList<String> minusArray = new ArrayList<String>(fastaData.subList(counter, fastaData.size()));
-                Collections.sort(plusArray, new NaturalOrderComparator(true));
-                Collections.sort(minusArray, new NaturalOrderComparator(true));
-                plusArray.addAll(minusArray);
-                for(int i = 0; i < plusArray.size(); i++)
-                    ExternalLink.writeStringToFile(destination, plusArray.get(i), true);     
+                ArrayList<String> sortedFasta = MyUtils.sortBySymbol(fastaData, "(-)");
+                for(int i = 0; i < sortedFasta.size(); i++)
+                    ExternalLink.writeStringToFile(destination, sortedFasta.get(i), true);     
             }
         }
     }
@@ -906,7 +885,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     /*
     / functie pt entragerea flanking sequeces in fisier .raw de la border-ulfiecarui Best Result din taburi
     */
-    private void exportSequencesAtBorder(boolean useTSD, boolean useDoubleFlanks, int lengthSeqExtract, int lengthTolerance) {
+    private void exportSequencesAtBorder(boolean useTSD, boolean useDoubleFlanks, boolean toggleConsensus, double consensusTreshold, int lengthSeqExtract, int lengthTolerance) {
         ArrayList<String> bestResultData = new ArrayList<String>();
         String bestResult;
         String folderRaw = ReadOnlyConfiguration.getString("FOLDER_RAW");
@@ -928,12 +907,22 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                     }
                 }
                 if(bestResult != null) {
-                    bestResult = ">" + auxMainResult.infoQuery.queryName + bestResult + "\n";
+                    if(!toggleConsensus)
+                        bestResult = ">" + auxMainResult.infoQuery.queryName + bestResult + "\n";
+                    else
+                        bestResult = bestResult.replaceAll("[(\\-+)\n]","");
                     bestResultData.add(bestResult);
                 }
             }
         }
-        saveToFile(MyUtils.FASTA_EXT, null, bestResultData);        
+        if(bestResultData.isEmpty())
+            JOptionPane.showMessageDialog(RootFrame.this,
+                        "No jonction border detected","Error",JOptionPane.ERROR_MESSAGE);
+        if(toggleConsensus) {
+            saveToFile(MyUtils.FASTA_EXT, null, MyUtils.getConsensus(bestResultData, consensusTreshold));
+        }
+        else
+            saveToFile(MyUtils.FASTA_EXT, null, bestResultData);
     }
     
     /*
@@ -1057,9 +1046,4 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
 
     };
 
-
 }
-
-
-
-
