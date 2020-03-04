@@ -132,11 +132,11 @@ public class JExportPane extends JPanel {
         gbc = makeGbc(1, 0, 1, 1, new Insets(5,5,5,5));
         this.add(insertionTSDButton, gbc);
         gbc = makeGbc(0, 1, 1, 1, new Insets(5,5,5,5));
-        this.add(chooseCoordinateButton, gbc);
+        this.add(insertionFlankingButton, gbc);
         gbc = makeGbc(1, 1, 1, 1, new Insets(5,5,5,5));
         this.add(insertionTwoFlanksButton, gbc);
         gbc = makeGbc(0, 2, 1, 1, new Insets(5,5,5,5));
-        this.add(insertionFlankingButton, gbc);
+        this.add(chooseCoordinateButton, gbc);
         gbc = makeGbc(1, 2, 1, 1, new Insets(5,5,5,5));
         this.add(toggleConsensusButton, gbc);
         gbc = makeGbc(0, 3, 1, 1, new Insets(5,5,5,5));
@@ -156,7 +156,7 @@ public class JExportPane extends JPanel {
         gbc = makeGbc(1, 6, 1, 1, new Insets(5,5,5,5));
         this.add(toleranceExtractSeqField, gbc);
         gbc = makeGbc(0, 7, 1, 1, new Insets(5,5,5,5));
-        this.add(new JLabel("Consensus Treshold (%)"), gbc);
+        this.add(new JLabel("Treshold Value (%)"), gbc);
         gbc = makeGbc(1, 7, 1, 1, new Insets(5,5,5,5));
         this.add(consensusTresholdField, gbc);
     }
@@ -224,6 +224,5 @@ public class JExportPane extends JPanel {
         return null;
     }
 }
-
 
 
