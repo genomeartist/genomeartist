@@ -38,8 +38,8 @@ import ro.genomeartist.gui.controller.externalcalls.RawFileFilter;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
 
 /**
- * Consturiesc panoul de setari
- * @author iulian
+ * Consturiesc panoul de export
+ * @author ghita
  */
 public class JExportPane extends JPanel {
     private JRadioButton tableButton;

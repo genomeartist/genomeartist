@@ -657,7 +657,7 @@ public class FinalResultExporter {
     }
     
     /**
-     * verifica daca este nevoie de antipralel
+     * verifica daca este nevoie de reversecomplement
      */
     public static boolean doReverseComplement(boolean transposonSense, boolean genomeSense) {
         if((transposonSense && genomeSense) || (transposonSense && !genomeSense))
@@ -667,7 +667,7 @@ public class FinalResultExporter {
     }
     
     /**
-     * verifica daca este nevoie de antipralel
+     * verifica daca este orientare tip II
      */
     public static boolean isTypeIIorientation(boolean transposonSense, boolean genomeSense) {
         if((transposonSense && !genomeSense) || (!transposonSense && genomeSense))
