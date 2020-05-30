@@ -94,7 +94,7 @@ import ro.genomeartist.gui.utils.NaturalOrderComparator;
 
 /**
  *
- * @author iulian
+ * @author iulian, ghita
  */
 public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
 
