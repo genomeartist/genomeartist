@@ -32,8 +32,8 @@ import ro.genomeartist.gui.mainpanels.settings.JSettingsPane;
 import ro.genomeartist.gui.utils.JMyBoolean;
 
 /**
- *  Dialogul wrapper peste panoul cu afisearea unui Partial Result
- * @author iulian
+ *  Dialogul wrapper peste panoul pentru export
+ * @author ghita
  */
 public class JExportDialog extends JTwoButtonAbstractDialog {
     //Constante pentru dimensiuni
@@ -58,7 +58,7 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     private boolean useBorderCoordinate;
 
     /**
-     * Dialog de afisare partial result
+     * Dialog de afisare export
      */
     public JExportDialog(IGlobalManager globalManager, 
             String title, boolean modal, JMyBoolean isOk)  {
