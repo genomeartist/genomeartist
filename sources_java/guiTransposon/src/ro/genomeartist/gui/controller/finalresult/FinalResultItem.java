@@ -36,7 +36,7 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author iulian
+ * @author iulian, ghita
  */
 public class FinalResultItem implements ICanPaint {
 
@@ -240,7 +240,7 @@ public class FinalResultItem implements ICanPaint {
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
         
         //Calculez pozitia de insertie
-        FinalResultExporter.FilteredSetWrapper filteredStWrapper = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), 3);
+        FinalResultExporter.FilteredSetWrapper filteredStWrapper = FinalResultExporter.filterIntervalMappingSet(this.getIntervalMappingSet(), 0);
         IntervalMappingSet filteredIntervalMappingSet = filteredStWrapper.intervalSet;
         int filteredSetIndex = filteredStWrapper.intervalIndex;
         int[] codifiedInsertionPosition = FinalResultExporter.getInsertionPosition(filteredIntervalMappingSet);
@@ -699,7 +699,3 @@ public class FinalResultItem implements ICanPaint {
         this.score = score;
     }
 }
-
-
-
-

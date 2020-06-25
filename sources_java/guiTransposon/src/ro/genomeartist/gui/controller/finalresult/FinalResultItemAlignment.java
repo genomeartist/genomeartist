@@ -43,7 +43,7 @@ import ro.genomeartist.gui.controller.settings.GeneralSettings;
 
 /**
  *
- * @author iulian
+ * @author iulian, ghita
  */
 public class FinalResultItemAlignment implements ICanPaint {
     
@@ -196,7 +196,7 @@ public class FinalResultItemAlignment implements ICanPaint {
         // ~~~~~~~~~~~~~~~~~~Intervale~~~~~~~~~~~~~~~~~~~~~~~
 
         //Calculez pozitia de insertie
-        FilteredSetWrapper filteredSetWrapper = filterIntervalMappingSet(finalResultItem.getIntervalMappingSet(), 3);
+        FilteredSetWrapper filteredSetWrapper = filterIntervalMappingSet(finalResultItem.getIntervalMappingSet(), 0);
         IntervalMappingSet filteredIntervalMappingSet = filteredSetWrapper.intervalSet;
         int filteredIntervalIndex = filteredSetWrapper.intervalIndex;
         int[] codifiedInsertionPosition = getInsertionPosition(filteredIntervalMappingSet);
@@ -1040,5 +1040,3 @@ public class FinalResultItemAlignment implements ICanPaint {
     }
 
 }
-
-
