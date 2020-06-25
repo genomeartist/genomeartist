@@ -63,7 +63,7 @@ import net.sf.jasperreports.view.JasperViewer;
 
 /**
  * Clasa ce face afisarea si exportarea formularelor
- * @author iulian
+ * @authors iulian, ghita
  */
 public class FinalResultExporter {
 
@@ -198,11 +198,14 @@ public class FinalResultExporter {
      */
     public static FilteredSetWrapper filterIntervalMappingSet(IntervalMappingSet inputSet, int lengthTolerance) {
         ArrayList<IntervalMappingSet> intervalClusters = new ArrayList<IntervalMappingSet>();
+        ArrayList<Integer> maxCoordinates = new ArrayList<Integer>();
         int i = 0;
         int maxValue;
         int maxIndex = 0;
+        int intervalIndex = 0;
         int minCoordinateLimit = 10;
-        ArrayList<Integer> maxCoordinates = new ArrayList<Integer>();
+        boolean hasMin = false;
+        boolean hasTransposon = false;
         // Pune fiecare insula de intervale separate prin max lengthTolerance intr-un element separat din ArrayList-ul intervalClusters
         while(i < inputSet.size()) {
             IntervalMappingSet auxIntervalSet = new IntervalMappingSet();
@@ -222,33 +225,47 @@ public class FinalResultExporter {
             }
             intervalClusters.add(auxIntervalSet);
         }
-        // Selectez insula (clusterul) cu valoarea de granita cea mai mare sau egala cu 1
+        // Selectez insula (clusterul) cu valoarea de granita cea mai mare sau mai mica sau egala cu 10
         for(int j = 0; j < intervalClusters.size(); j++) {
             maxValue = 0;
-            for(int k = 0; k < intervalClusters.get(j).size(); k++) {               
+            hasTransposon = false;
+            hasMin = false;
+            for(int k = 0; k < intervalClusters.get(j).size(); k++) {
+                if(intervalClusters.get(j).elementAt(k).isTransposon())
+                    hasTransposon = true;
                 if(k != 0) {
                     if(intervalClusters.get(j).elementAt(k).getPozitieStartGenom() <= minCoordinateLimit)
-                        return new FilteredSetWrapper(intervalClusters.get(j), j);
+                        hasMin = true;
                     if(intervalClusters.get(j).elementAt(k).getPozitieStartGenom() > maxValue)
                         maxValue = intervalClusters.get(j).elementAt(k).getPozitieStartGenom(); 
                 }
                 if(k != intervalClusters.get(j).size()-1) {
                     if(intervalClusters.get(j).elementAt(k).getPozitieStopGenom() <= minCoordinateLimit)
-                        return new FilteredSetWrapper(intervalClusters.get(j), j);
+                        hasMin = true;
                     if(intervalClusters.get(j).elementAt(k).getPozitieStopGenom() > maxValue)
                         maxValue = intervalClusters.get(j).elementAt(k).getPozitieStopGenom();                    
                 }
             }
-            maxCoordinates.add(maxValue);
+            if(hasTransposon && hasMin) {
+                for(int l = 0; l < j; l++)
+                    intervalIndex += intervalClusters.get(l).size();
+                return new FilteredSetWrapper(intervalClusters.get(j), intervalIndex);
+            }
+            if(hasTransposon)
+                maxCoordinates.add(maxValue);
+            else
+                maxCoordinates.add(0);
         }
         maxValue = 0;
         for(int j = 0; j < maxCoordinates.size(); j++) {
             if(maxCoordinates.get(j) > maxValue) {
                 maxValue = maxCoordinates.get(j);
-                maxIndex = j;
+                maxIndex = j;               
             }               
         }
-        return new FilteredSetWrapper(intervalClusters.get(maxIndex), maxIndex);
+        for(int l = 0; l < maxIndex; l++)
+            intervalIndex += intervalClusters.get(l).size();
+        return new FilteredSetWrapper(intervalClusters.get(maxIndex), intervalIndex);
     }
     
     /**
@@ -290,8 +307,7 @@ public class FinalResultExporter {
         else if(intervalMappingSet.size() == 3) {
             codifiedInsertionPosition[3] = 1;
             // cazul transpozon-genom-transpozon
-            if(intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {
-                codifiedInsertionPosition[1] = 1;//GenomeItem = intervalMappingSet.elementAt(1);                
+            if(intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {          
                 if(intervalMappingSet.elementAt(0).getPozitieStopGenom() <= minCoordinateLimit)
                     conformation = "Left Transposon";
                 else if(intervalMappingSet.elementAt(2).getPozitieStartGenom() <= minCoordinateLimit)
@@ -348,6 +364,12 @@ public class FinalResultExporter {
                 else if(intervalMappingSet.elementAt(2).getPozitieStartGenom() <= minCoordinateLimit
                     || intervalMappingSet.elementAt(2).getPozitieStartGenom() == localMaxTransposonCoordinate)
                     conformation = "Right Transposon";
+            } //cazul transpozon-genom-genom
+            if(intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && !intervalMappingSet.elementAt(2).isTransposon()) {
+                    conformation = "Left Transposon";
+            } //cazul genom-genom-transpozon
+            if(!intervalMappingSet.elementAt(0).isTransposon() && !intervalMappingSet.elementAt(1).isTransposon() && intervalMappingSet.elementAt(2).isTransposon()) {
+                    conformation = "Right Transposon";
             }
             if(conformation.equals("Left Transposon")) {
                 codifiedInsertionPosition[0] = 0;//TransposonItem = intervalMappingSet.elementAt(0);
@@ -377,9 +399,8 @@ public class FinalResultExporter {
             codifiedInsertionPosition[3] = -1;
         }
         // Cazul artefact
-        else {
+        else
             codifiedInsertionPosition[0] = codifiedInsertionPosition[1] = codifiedInsertionPosition[2] = codifiedInsertionPosition[3] = -1;
-        }
         return codifiedInsertionPosition;
     }    
     
@@ -754,7 +775,3 @@ public class FinalResultExporter {
         // </editor-fold>
     }
 }
-
-
-
-
