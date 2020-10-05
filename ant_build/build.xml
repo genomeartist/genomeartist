@@ -6,10 +6,7 @@
     <property name="genomeless.index.file" value="${genomeless.dir}/paramsIndexFisiere.txt"/>
 
     <property name="temp.dir" value="temp"/>
-    <property name="obfuscator.jar" value="proguard.jar"/>
-    <property name="obfuscator.config" value="applications.pro"/>
-    
-    <property name="project.jar" value="artist_temp.jar"/>
+
     <property name="gARTIST.jar" value="genomeARTIST.jar"/>
     <property name="main.classname" value="ro.genomeartist.gui.Main"/>
     
@@ -182,10 +179,10 @@
             <fileset dir="${release.dir}/${temp.dir}/lib"/>
         </copy>
          <!-- Package into the final package -->
-        <manifestclasspath property="lib.list" jarfile="${release.dir}/${project.jar}">
+        <manifestclasspath property="lib.list" jarfile="${release.dir}/${gARTIST.jar}">
                 <classpath refid="includelibs"/>
         </manifestclasspath>
-        <jar destfile="${release.dir}/${project.jar}" filesetmanifest="skip">
+        <jar destfile="${release.dir}/${gARTIST.jar}" filesetmanifest="skip">
             <zipfileset src="${release.dir}/${temp.dir}/${gui.jar}"/>
             <manifest>
                 <attribute name="Class-Path" value="${lib.list}"/>
@@ -193,10 +190,6 @@
                 <attribute name="SplashScreen-Image" value="${gui.splash}"/>
             </manifest>
         </jar>
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <!--   Obfuscate the jar     -->
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <antcall target="obfuscate"/>
         <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
         <!--   Make a genomeless version     -->
         <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -205,7 +198,7 @@
         <!--         Cleanup          -->
         <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
         <delete dir="${release.dir}/${temp.dir}"/>
-        <delete file="${release.dir}/${project.jar}"/>
+        <delete file="${release.dir}/${gARTIST.jar}"/>
     </target>
 
     <!--   Make a genomeless version   -->
@@ -230,14 +223,6 @@
         <chmod file="${genomeless.dir}/${server.expansion}" perm="ugo+x"/>
         <chmod file="${genomeless.dir}/${server.server}" perm="ugo+x"/>
         <chmod file="${genomeless.dir}/${script.file}" perm="ugo+x"/>
-    </target>
-
-    <!-- Obfuscheaza sursele  -->
-    <target name="obfuscate">
-        <!-- obfuscate sources -->
-        <taskdef resource="proguard/ant/task.properties"
-                 classpath="proguard.jar" />
-        <proguard configuration="applications.pro"/>
     </target>
 
     <!--   Run the file    -->

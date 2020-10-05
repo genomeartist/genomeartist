@@ -2,6 +2,7 @@
 *~
 *.class
 *.jasper
+.idea/
 build
 /guiTransposon/nbproject/private/
 /resources/gene/
