@@ -18,6 +18,7 @@
  */
 
 package ro.genomeartist.gui.dialogs;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import ro.genomeartist.components.dialogs.JTwoButtonAbstractDialog;
 import ro.genomeartist.components.modalpanel.progresspanel.JProgressPanel;
@@ -51,11 +52,10 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     
     private JMyBoolean isOk;
     
-    private int genomeCoordinate;
+    private int[] intCoordinateArray;
     private int lengthExtractSeq;
     private int toleranceExtractSeq;
     private double consensusTreshold;
-    private boolean useBorderCoordinate;
 
     /**
      * Dialog de afisare export
@@ -91,6 +91,9 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
      */
     public void fireActionOk() {
         String coordinateText = exportPane.getGenomeCoordinate();
+        ArrayList<String> coordinateList = exportPane.getGenomeCoordinateList();
+        if(coordinateList == null)
+            coordinateList = new ArrayList<String>();
         String lengthExtractSeqText = exportPane.getLengthExtractSeq();
         String toleranceExtractSeqText = exportPane.getToleranceExtractSeq();
         String consensusTresholdText = exportPane.getConsensusTreshold();
@@ -118,25 +121,26 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
                                 "Consensus Treshold must be a percentage","Error",JOptionPane.ERROR_MESSAGE);
                 consensusTreshold = -1;
                 isOk.setFalse();
-            }            
+            }
         }
         if(exportPane.getIsChooseButtonSelected()) {
-            useBorderCoordinate = false;           
-            try {
-                genomeCoordinate = Integer.parseInt(coordinateText);
-            } catch(NumberFormatException e) { 
-                JOptionPane.showMessageDialog(JExportDialog.this,
-                                "Coordinate Value must be an Integer","Error",JOptionPane.ERROR_MESSAGE);
-                genomeCoordinate = -1;
-                isOk.setFalse();
+            if(!coordinateText.isEmpty())
+                coordinateList.add(0, coordinateText);
+            intCoordinateArray = new int[coordinateList.size()];
+            for(int i = 0; i < coordinateList.size(); i++) {
+                try {
+                    intCoordinateArray[i] = Integer.parseInt(coordinateList.get(i));
+                } catch(NumberFormatException e) { 
+                    JOptionPane.showMessageDialog(JExportDialog.this,
+                                    "Coordinate Value must be an Integer","Error",JOptionPane.ERROR_MESSAGE);
+                    isOk.setFalse();
+                    break;
+                }
             }
             if(exportPane.getChromosomeFilepath() == null)
                 JOptionPane.showMessageDialog(JExportDialog.this,
                                 "No Chromosome selected","Error",JOptionPane.ERROR_MESSAGE);
         }
-        else {
-            useBorderCoordinate = true;            
-        }            
         JExportDialog.this.dispose();
         isOk.setTrue();
     }
@@ -152,12 +156,12 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
         return exportPane.getChromosomeFilepath();
     }
     
-    public int getGenomeCoordinate() {
-        return Integer.parseInt(exportPane.getGenomeCoordinate());
+    public int[] getGenomeCoordinateArray() {
+        return intCoordinateArray;
     }
     
     public int getLengthExtractSeq() {
-        return Integer.parseInt(exportPane.getLengthExtractSeq());
+        return lengthExtractSeq;
     }
     
     public int getToleranceExtractSeq() {
