@@ -747,7 +747,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     public void fireActionExport() {
         JMyBoolean isOk = new JMyBoolean();
         String chromosomeFilePath;
-        int genomeCoordinate;
+        int[] genomeCoordinateArray;
         int lengthExtractSeq;
         int toleranceExtractSeq;
         final JExportDialog exportDialog = new JExportDialog(
@@ -761,8 +761,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             double consensusTreshold = exportDialog.getConsensusTreshold();
             if(exportDialog.getIsChooseButtonSelected()) {
                 chromosomeFilePath = exportDialog.getChromosomeFilePath();
-                genomeCoordinate = exportDialog.getGenomeCoordinate();
-                exportSequenceAtCoordinate(chromosomeFilePath, genomeCoordinate, lengthExtractSeq);
+                genomeCoordinateArray = exportDialog.getGenomeCoordinateArray();
+                exportSequenceAtCoordinate(chromosomeFilePath, genomeCoordinateArray, lengthExtractSeq);
             }            
             if(exportDialog.getIsTSDButtonSelected())
                 exportSequencesAtBorder(true, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
@@ -928,22 +928,24 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     /*
     / functie pentru extragerea flanking sequences din fisier .raw la coordonata specificata
     */
-    private void exportSequenceAtCoordinate(String rawFilePath, int coordinate, int sideLengthExtract) {
+    private void exportSequenceAtCoordinate(String rawFilePath, int[] coordinates, int sideLengthExtract) {
         ArrayList<String> containerList = new ArrayList<String>();
         String readSequence;
-        try {
-            readSequence = FinalResultExporter.readFromRawFile(rawFilePath, coordinate, sideLengthExtract, sideLengthExtract);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(RootFrame.this,
-                                "Error","Error",JOptionPane.ERROR_MESSAGE);
-            readSequence = null;
-            return;   
-        }
-        if(readSequence == null)
-            JOptionPane.showMessageDialog(RootFrame.this,
+        for(int i = 0; i < coordinates.length; i++) {
+            try {
+                readSequence = FinalResultExporter.readFromRawFile(rawFilePath, coordinates[i], sideLengthExtract, sideLengthExtract);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(RootFrame.this,
+                                    "Error","Error",JOptionPane.ERROR_MESSAGE);
+                readSequence = null;
+                return;   
+            }
+            if(readSequence == null)
+                JOptionPane.showMessageDialog(RootFrame.this,
                                 "Coordinate larger than file size","Error",JOptionPane.ERROR_MESSAGE);               
-        readSequence = ">" + rawFilePath + "-" + Integer.toString(coordinate) + " (+)\n" + readSequence + "\n";            
-        containerList.add(readSequence);
+            readSequence = ">" + rawFilePath + "-" + Integer.toString(coordinates[i]) + " (+)\n" + readSequence + "\n";            
+            containerList.add(readSequence);
+        }
         saveToFile(MyUtils.FASTA_EXT, null, containerList);
     }
     

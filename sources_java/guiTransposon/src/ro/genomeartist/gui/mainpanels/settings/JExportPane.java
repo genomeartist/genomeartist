@@ -26,13 +26,18 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import ro.genomeartist.gui.controller.externalcalls.RawFileFilter;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
@@ -49,6 +54,8 @@ public class JExportPane extends JPanel {
     private JRadioButton chooseCoordinateButton;
     private JCheckBox toggleConsensusButton;
     private JTextField coordinateField;
+    private ArrayList<String> coordinateList;
+    private JButton browseCoordinateFileButton;
     private JTextField lengthExtractSeqField;
     private JTextField toleranceExtractSeqField;
     private JTextField consensusTresholdField;
@@ -64,11 +71,13 @@ public class JExportPane extends JPanel {
             if(chooseCoordinateButton.isSelected()) {
                 coordinateField.setEnabled(true);
                 chromosomeFilesList.setEnabled(true);
+                browseCoordinateFileButton.setEnabled(true);
             }
             if(insertionTSDButton.isSelected() || insertionFlankingButton.isSelected() 
                 || tableButton.isSelected() || insertionTwoFlanksButton.isSelected()) {
                 coordinateField.setEnabled(false);
                 chromosomeFilesList.setEnabled(false);
+                browseCoordinateFileButton.setEnabled(false);
             }
         }
     }
@@ -88,7 +97,14 @@ public class JExportPane extends JPanel {
         insertionTwoFlanksButton.addActionListener(new EnableListener());
         toggleConsensusButton.addActionListener(new EnableListener());
         coordinateField = new JTextField(15);
-        coordinateField.setEnabled(false);
+        coordinateField.setEnabled(false);       
+        browseCoordinateFileButton = new JButton("Browse");
+        browseCoordinateFileButton.setEnabled(false);
+        browseCoordinateFileButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fireActionLoadCoordinates();
+            }
+        });
         
         //... Create a button group and add the buttons.
         buttonGroup = new ButtonGroup();
@@ -147,6 +163,8 @@ public class JExportPane extends JPanel {
         this.add(new JLabel("Coordinate"), gbc);
         gbc = makeGbc(1, 4, 1, 1, new Insets(5,5,5,5));
         this.add(coordinateField, gbc);
+        gbc = makeGbc(2, 4, 1, 1, new Insets(5,5,5,5));
+        this.add(browseCoordinateFileButton, gbc);
         gbc = makeGbc(0, 5, 1, 1, new Insets(5,5,5,5));
         this.add(new JLabel("Length of TSD/Flank"), gbc);
         gbc = makeGbc(1, 5, 1, 1, new Insets(5,5,5,5));
@@ -175,6 +193,24 @@ public class JExportPane extends JPanel {
         return gbc;
     }
     
+    public void fireActionLoadCoordinates() {
+        coordinateList = new ArrayList<String>();
+        JFileChooser fc = new JFileChooser();
+        int result = fc.showOpenDialog(this);
+        coordinateList.clear();
+        if(result == JFileChooser.APPROVE_OPTION) {
+            try {                
+                final File file = fc.getSelectedFile();
+                FileReader fr = new FileReader(file);
+                BufferedReader br = new BufferedReader(fr);
+                String line;  
+                while((line = br.readLine()) != null) {
+                    coordinateList.add(line);
+                }
+            } catch(Exception e) {}
+        }
+    }
+
     // Get-eri    
     public boolean getIsChooseButtonSelected() {
         return chooseCoordinateButton.isSelected();
@@ -204,6 +240,10 @@ public class JExportPane extends JPanel {
         return coordinateField.getText();
     }
     
+    public ArrayList<String> getGenomeCoordinateList() {
+        return coordinateList;
+    }
+    
     public String getLengthExtractSeq() {
         return lengthExtractSeqField.getText();
     }
@@ -224,6 +264,3 @@ public class JExportPane extends JPanel {
         return null;
     }
 }
-
-
-
