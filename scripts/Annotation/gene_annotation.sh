@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# place this script in a compiled GA in *rootfolder*/resources/gene/
 echo "Name of the transposable element:"
 read r1
 
