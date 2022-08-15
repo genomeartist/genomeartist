@@ -172,55 +172,29 @@ public class FinalResultExporter {
     
     /**
      * Pun datele dorite intr-un tabel de String-uri
-     * @param sourceResult
-     * @param lengthSeqExtract
-     * @param lengthTolerance
-     * @return 
      */
-    public static ArrayList<String[]> getResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance, int numberOfResults) {
-        ArrayList<FinalResultItem> sets = new ArrayList<FinalResultItem>();
-        ArrayList<String> results = new ArrayList<String>();    
-        String queryName = sourceResult.infoQuery.queryName;
-        int score;
+    public static ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
+        String queryName = sourceResult.infoQuery.queryName;       
+        int score = sourceResult.bestResult.getScore();
         ArrayList<String[]> batchResult = new ArrayList<String[]>();
-        IntervalMappingSet filteredSet;
-        String[] individualResult; 
-                 
-        if (numberOfResults <= 0)
-            sets.add(sourceResult.bestResult);
-        else {
-            for (int i = 0; i < numberOfResults && i < sourceResult.finalResultSet.size(); i++) {
-                sets.add(sourceResult.finalResultSet.get(i));
+        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance).intervalSet;
+        
+        String[] individualResult = getIndividualInsertionData(filteredSet, queryName, score, sourceResult.bestResult, lengthSeqExtract);
+        if(individualResult != null)
+            batchResult.add(individualResult);
+        for(int i = 0; i < sourceResult.finalResultSet.size(); i++) {
+            if(!sourceResult.finalResultSet.elementAt(i).equals(sourceResult.bestResult) && sourceResult.finalResultSet.elementAt(i).getScore() == score) {
+                filteredSet = filterIntervalMappingSet(sourceResult.finalResultSet.elementAt(i).getIntervalMappingSet(), lengthTolerance).intervalSet;
+                individualResult = getIndividualInsertionData(filteredSet, queryName, score, sourceResult.bestResult, lengthSeqExtract);
+                if(individualResult != null)
+                    batchResult.add(individualResult);
             }
-        }   
-        
-        for (FinalResultItem resultItem : sets) {     
-            score = resultItem.getScore();  
-            filteredSet = filterIntervalMappingSet(resultItem.getIntervalMappingSet(), lengthTolerance).intervalSet;
-            individualResult = getTableRowInsertionData(filteredSet, queryName, score, resultItem, lengthSeqExtract);
-        
-            if(individualResult != null)
-                batchResult.add(individualResult);
-            
-            if (numberOfResults <= 0) {
-                for(int i = 0; i < sourceResult.finalResultSet.size(); i++) {
-                    if(!sourceResult.finalResultSet.elementAt(i).equals(resultItem) && sourceResult.finalResultSet.elementAt(i).getScore() == score) {
-                        filteredSet = filterIntervalMappingSet(sourceResult.finalResultSet.elementAt(i).getIntervalMappingSet(), lengthTolerance).intervalSet;
-                        individualResult = getTableRowInsertionData(filteredSet, queryName, score, sourceResult.bestResult, lengthSeqExtract);
-                        if(individualResult != null)
-                            batchResult.add(individualResult);
-                        }
-                    }
-                }
         }
         return batchResult;
     }
     
     /**
      * Filtrez insulele artefact
-     * @param inputSet
-     * @param lengthTolerance
-     * @return 
      */
     public static FilteredSetWrapper filterIntervalMappingSet(IntervalMappingSet inputSet, int lengthTolerance) {
         ArrayList<IntervalMappingSet> intervalClusters = new ArrayList<IntervalMappingSet>();
@@ -296,8 +270,6 @@ public class FinalResultExporter {
     
     /**
      * Identific locusul de insertie
-     * @param intervalMappingSet
-     * @return 
      */
     public static int[] getInsertionPosition(IntervalMappingSet intervalMappingSet) {
         String conformation = new String();
@@ -434,14 +406,8 @@ public class FinalResultExporter {
     
     /**
      * Creez si returnez un rand de tabel
-     * @param intervalMappingSet
-     * @param queryName
-     * @param score
-     * @param lengthTDS
-     * @param finalResultItem
-     * @return 
      */
-    public static String[] getTableRowInsertionData(IntervalMappingSet intervalMappingSet, String queryName, int score, FinalResultItem finalResultItem, int lengthTDS) { 
+    public static String[] getIndividualInsertionData(IntervalMappingSet intervalMappingSet, String queryName, int score, FinalResultItem finalResultItem, int lengthTDS) { 
         IntervalMappingItem TransposonItem;
         IntervalMappingItem GenomeItem;
         int borderPosition = 0;
@@ -449,8 +415,8 @@ public class FinalResultExporter {
         String[] returnTable = new String[MyUtils.COLUMNS_NUMBER];
         
         returnTable[0] = queryName;
-        returnTable[14] = Integer.toString(score);
-        returnTable[16] = "";
+        returnTable[8] = Integer.toString(score);
+        returnTable[11] = "";
                 
         int[] codifiedInsertionPosition = getInsertionPosition(intervalMappingSet);
         if(codifiedInsertionPosition[0] == -2) {
@@ -465,7 +431,6 @@ public class FinalResultExporter {
             borderPosition = codifiedInsertionPosition[2];
             returnTable[2] = TransposonItem.getFisierOrigine();
             tsdRow = getTSD(GenomeItem, intervalMappingSet, finalResultItem, codifiedInsertionPosition, lengthTDS, false);
-            
             if(doReverseComplement(TransposonItem.isComplement(), GenomeItem.isComplement()))
                 tsdRow = reverseComplement(tsdRow);
             if(isTypeIIorientation(TransposonItem.isComplement(), GenomeItem.isComplement()))
@@ -473,7 +438,7 @@ public class FinalResultExporter {
             else
                 tsdRow = tsdRow + "(+)";
         }
-        else {      // Cazul artefact
+        else {              // Cazul artefact
             return null;
         }
         
@@ -481,217 +446,74 @@ public class FinalResultExporter {
         
         if(borderPosition == 1) {
             returnTable[3] = Integer.toString(GenomeItem.getPozitieStartGenom());
-            returnTable[4] = Integer.toString(GenomeItem.getPozitieStopGenom());
-            returnTable[5] = Integer.toString(TransposonItem.getPozitieStopGenom());
-            returnTable[6] = Integer.toString(TransposonItem.getPozitieStartGenom());
-            
-            returnTable[7] = Integer.toString(GenomeItem.getPozitieStartQuery());
-            returnTable[8] = Integer.toString(GenomeItem.getPozitieStopQuery());
-            returnTable[9] = Integer.toString(TransposonItem.getPozitieStartQuery());
-            returnTable[10] = Integer.toString(TransposonItem.getPozitieStopQuery());
-            
-            returnTable[15] = tsdRow;
+            returnTable[4] = Integer.toString(TransposonItem.getPozitieStopGenom());
+            returnTable[9] = tsdRow;
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStopGenom());
             if(GenomeItem.getPozitieStartQuery() - TransposonItem.getPozitieStopQuery() > 1)
-                returnTable[16] = "*";
+                returnTable[11] = "*";
         }
         else if(borderPosition == 0) {
             returnTable[3] = Integer.toString(GenomeItem.getPozitieStopGenom());
-            returnTable[4] = Integer.toString(GenomeItem.getPozitieStartGenom());
-            returnTable[5] = Integer.toString(TransposonItem.getPozitieStartGenom());
-            returnTable[6] = Integer.toString(TransposonItem.getPozitieStopGenom());
-            
-            returnTable[7] = Integer.toString(GenomeItem.getPozitieStartQuery());
-            returnTable[8] = Integer.toString(GenomeItem.getPozitieStopQuery());
-            returnTable[9] = Integer.toString(TransposonItem.getPozitieStartQuery());
-            returnTable[10] = Integer.toString(TransposonItem.getPozitieStopQuery());
-
-            returnTable[15] = tsdRow;
+            returnTable[4] = Integer.toString(TransposonItem.getPozitieStartGenom());
+            returnTable[9] = tsdRow;
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStartGenom());
             if(TransposonItem.getPozitieStartQuery() - GenomeItem.getPozitieStopQuery() > 1)
-                returnTable[16] = "*";
+                returnTable[11] = "*";
         }
         else if(borderPosition == -2) {
             returnTable[3] = Integer.toString(GenomeItem.getPozitieStartGenom());
-            returnTable[4] = Integer.toString(GenomeItem.getPozitieStopGenom());
-            returnTable[5] = "";
-            returnTable[6] = "";
-            
-            returnTable[7] = Integer.toString(GenomeItem.getPozitieStartQuery());
-            returnTable[8] = Integer.toString(GenomeItem.getPozitieStopQuery());
+            returnTable[4] = "";
             returnTable[9] = "";
-            returnTable[10] = "";
-            
-            returnTable[15] = "";
+            returnTable[10] = Integer.toString(GenomeItem.getPozitieStopGenom());
         }
-        
-        returnTable[11] = "";
+        returnTable[5] = "";
         GeneVector auxGeneVector = GenomeItem.getInsideGenes();
         Iterator <GeneItem> iteratorGenes = auxGeneVector.iterator();
         while(iteratorGenes.hasNext()) {
             GeneItem auxInsideGene = iteratorGenes.next();
-            returnTable[11] += auxInsideGene.getName();
+            returnTable[5] += auxInsideGene.getName();
             if(iteratorGenes.hasNext())
-                returnTable[11] += "; ";
+                returnTable[5] += "; ";
         }
         GeneItem auxUpstreamGene = GenomeItem.getClosestUpstream();
         if(auxUpstreamGene != null)
-            returnTable[12] = auxUpstreamGene.getName();
+            returnTable[6] = auxUpstreamGene.getName();
         else
-            returnTable[12] = "";
-        
+            returnTable[6] = "";
         GeneItem auxDownstreamGene = GenomeItem.getClosestDownstream();
         if(auxDownstreamGene != null)
-            returnTable[13] = auxDownstreamGene.getName();
+            returnTable[7] = auxDownstreamGene.getName();
         else
-            returnTable[13] = "";
+            returnTable[7] = "";
                       
         return returnTable;
     }
 
     /**
      * Pun datele dorite intr-un fisier fasta
-     * @param sourceResult
-     * @param lengthTDS
-     * @param lengthTolerance
-     * @param numberOfResults
-     * @param toggleConsensus
-     * @return 
      */
-    public static ArrayList<String> getResultsTSD(MainResult sourceResult, int lengthTDS, int lengthTolerance, int numberOfResults, boolean toggleConsensus) {       
-        ArrayList<IntervalMappingSet> sets = new ArrayList<IntervalMappingSet>();
-        ArrayList<String> results = new ArrayList<String>();
-        int[] codifiedInsertionPosition;
-        IntervalMappingItem GenomeItem;
-        IntervalMappingItem TransposonItem;
-        String individualResult ;
-        
-        if (numberOfResults <= 0)
-            sets.add(filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance).intervalSet);
-        else {
-            for (int i = 0; i < numberOfResults && i < sourceResult.finalResultSet.size(); i++) {
-                sets.add(filterIntervalMappingSet(sourceResult.finalResultSet.get(i).getIntervalMappingSet(), lengthTolerance).intervalSet);
-            }
-        }
-        
-        for (IntervalMappingSet filteredSet : sets) {
-            codifiedInsertionPosition = getInsertionPosition(filteredSet);
-            
-            if(codifiedInsertionPosition[1] == -1) {
-                results.add("error at result: " + Integer.toString(sets.indexOf(filteredSet)) + " \n");
-                continue;
-            }           
-            GenomeItem = filteredSet.elementAt(codifiedInsertionPosition[1]);
-            TransposonItem = filteredSet.elementAt(codifiedInsertionPosition[0]);
-            individualResult = getTSD(GenomeItem, sourceResult.bestResult.getIntervalMappingSet(), sourceResult.bestResult, codifiedInsertionPosition, lengthTDS, true);        
-            
-            if(individualResult != null) {
-                if(doReverseComplement(TransposonItem.isComplement(), GenomeItem.isComplement()))
-                    individualResult = reverseComplement(individualResult);
-
-                if(isTypeIIorientation(TransposonItem.isComplement(), GenomeItem.isComplement()))
-                    individualResult = "(-)\n" + individualResult;
-                else
-                    individualResult = "(+)\n" + individualResult;
-
-                if(!toggleConsensus)
-                    individualResult = ">" + sourceResult.infoQuery.queryName + individualResult + "\n";
-                else
-                    individualResult = individualResult.replaceAll("[(\\-+)\n]","");
-                
-                results.add(individualResult);
-            }
-        }
-        return results;
-    }
-    
-    
-    /**
-     * Pun datele flancatoare intr-un fisier fasta
-     * @param sourceResult
-     * @param useDoubleFlanks
-     * @param lengthTSD
-     * @param lengthTolerance
-     * @param numberOfResults
-     * @param toggleConsensus
-     * @param FolderPath
-     * @return 
-     */
-    public static ArrayList<String> getResultsFlankingSeq(MainResult sourceResult, boolean useDoubleFlanks, int lengthTSD, int lengthTolerance, int numberOfResults, boolean toggleConsensus, String FolderPath) throws IOException {       
-        ArrayList<IntervalMappingSet> sets = new ArrayList<IntervalMappingSet>();
-        ArrayList<String> results = new ArrayList<String>();
-        String readResult;
-        int genomePosition; 
-        int borderPosition;
-        int[] codifiedInsertionPosition;
-        
-        if (numberOfResults <= 0)
-            sets.add(filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance).intervalSet);
-        else {
-            for (int i = 0; i < numberOfResults && i < sourceResult.finalResultSet.size(); i++) {
-                sets.add(filterIntervalMappingSet(sourceResult.finalResultSet.get(i).getIntervalMappingSet(), lengthTolerance).intervalSet);
-            }
-        }
-        for (IntervalMappingSet filteredSet : sets) {
-            readResult = null;
-            genomePosition = 0;
-            borderPosition = 0;
-            codifiedInsertionPosition = getInsertionPosition(filteredSet);
-            if(codifiedInsertionPosition[1] == -1) {
-                results.add("error at result: " + Integer.toString(sets.indexOf(filteredSet)) + " \n");
-                continue;
-            }
-            
-            IntervalMappingItem GenomeItem = filteredSet.elementAt(codifiedInsertionPosition[1]);
-            IntervalMappingItem TransposonItem = filteredSet.elementAt(codifiedInsertionPosition[0]);
-            borderPosition = codifiedInsertionPosition[2];
-
-            if(codifiedInsertionPosition[0] != -1 && codifiedInsertionPosition[0] != -2) {
-                if(borderPosition == 1)
-                    genomePosition = GenomeItem.getPozitieStartGenom();
-                else if(borderPosition == 0)
-                    genomePosition = GenomeItem.getPozitieStopGenom();
-            }             
-            String genomeFilePath = FolderPath + GenomeItem.getFisierOrigine() + ".raw";
-            if((borderPosition == 1 && TransposonItem.isComplement() && !GenomeItem.isComplement())
-            || (borderPosition == 0 && !TransposonItem.isComplement() && GenomeItem.isComplement())
-            || (borderPosition == 1 && !TransposonItem.isComplement() && !GenomeItem.isComplement())
-            || (borderPosition == 0 && TransposonItem.isComplement() && GenomeItem.isComplement()) )
-                genomePosition--;
-            
-            if(useDoubleFlanks) {
-                if((borderPosition == 0 && !GenomeItem.isComplement()) || (borderPosition == 1 && GenomeItem.isComplement()))
-                    readResult = readFromRawFile(genomeFilePath, genomePosition, 2*lengthTSD, lengthTSD);
-                if((borderPosition == 1 && !GenomeItem.isComplement()) || (borderPosition == 0 && GenomeItem.isComplement()))
-                    readResult = readFromRawFile(genomeFilePath, genomePosition, lengthTSD, 2*lengthTSD);
-            }
+    public static String getBestResultsTSD(MainResult sourceResult, int lengthTDS, int lengthTolerance) {
+        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance).intervalSet;
+        int[] codifiedInsertionPosition = getInsertionPosition(filteredSet);
+        if(codifiedInsertionPosition[1] == -1)
+            return null;
+        IntervalMappingItem GenomeItem = filteredSet.elementAt(codifiedInsertionPosition[1]);
+        IntervalMappingItem TransposonItem = filteredSet.elementAt(codifiedInsertionPosition[0]);
+        String individualResult = getTSD(GenomeItem, sourceResult.bestResult.getIntervalMappingSet(), sourceResult.bestResult, codifiedInsertionPosition, lengthTDS, true);        
+        if(individualResult != null) {
+            if(doReverseComplement(TransposonItem.isComplement(), GenomeItem.isComplement()))
+                individualResult = reverseComplement(individualResult);
+            if(isTypeIIorientation(TransposonItem.isComplement(), GenomeItem.isComplement()))
+                return "(-)\n" + individualResult;
             else
-                readResult = readFromRawFile(genomeFilePath, genomePosition, lengthTSD, lengthTSD);
-            
-            if(readResult != null) {
-                if(isTypeIIorientation(TransposonItem.isComplement(), GenomeItem.isComplement()))
-                    readResult = "(-)\n" + reverseComplement(readResult);
-                else
-                    readResult = "(+)\n" + readResult;
-
-                if(!toggleConsensus)
-                    readResult = ">" + sourceResult.infoQuery.queryName + readResult + "\n";
-                else
-                    readResult = readResult.replaceAll("[(\\-+)\n]","");
-                results.add(readResult);
-            }
+                return "(+)\n" + individualResult;
         }
-        return results;
+        else
+            return null;
     }
-    
     
     /**
      * Returnez TDS
-     * @param GenomeItem
-     * @param intervalMappingSet
-     * @param finalResultItem
-     * @param lengthTDS
-     * @param useInFasta
-     * @param codifiedInsertionPosition
-     * @return 
      */
     public static String getTSD(IntervalMappingItem GenomeItem, IntervalMappingSet intervalMappingSet, FinalResultItem finalResultItem, int[] codifiedInsertionPosition, int lengthTDS, boolean useInFasta) {
         int gapCount, borderIndex, extractedSequenceIndex, i;
@@ -707,7 +529,7 @@ public class FinalResultExporter {
             while(gapCount > 0 && extractedSequenceIndex > 0) {
 		auxElement = finalResultItem.getOut1().substring(extractedSequenceIndex-i-1, extractedSequenceIndex-i);
 		if(!auxElement.equals("-"))
-                    gapCount--;	
+			gapCount--;	
                 output = auxElement + output;            
                 i++;
             }
@@ -736,15 +558,53 @@ public class FinalResultExporter {
         return output;
     }
     
-    
     /**
+     * Pun datele flancatoare intr-un fisier fasta
+     */
+    public static String getBestResultsFlankingSeq(MainResult sourceResult, boolean useDoubleFlanks, int lengthTSD, int lengthTolerance, String FolderPath) throws IOException {
+        IntervalMappingSet filteredSet = filterIntervalMappingSet(sourceResult.bestResult.getIntervalMappingSet(), lengthTolerance).intervalSet;
+        String readResult = null;
+        int genomePosition = 0, borderPosition;
+        int[] codifiedInsertionPosition = getInsertionPosition(filteredSet);
+        if(codifiedInsertionPosition[1] == -1)
+            return null;
+        IntervalMappingItem GenomeItem = filteredSet.elementAt(codifiedInsertionPosition[1]);
+        IntervalMappingItem TransposonItem = filteredSet.elementAt(codifiedInsertionPosition[0]);
+        borderPosition = codifiedInsertionPosition[2];
+            
+        if(codifiedInsertionPosition[0] != -1 && codifiedInsertionPosition[0] != -2) {
+            if(borderPosition == 1)
+                genomePosition = GenomeItem.getPozitieStartGenom();
+            else if(borderPosition == 0)
+                genomePosition = GenomeItem.getPozitieStopGenom();
+        }             
+        String genomeFilePath = FolderPath + GenomeItem.getFisierOrigine() + ".raw";
+        if((borderPosition == 1 && TransposonItem.isComplement() && !GenomeItem.isComplement())
+        || (borderPosition == 0 && !TransposonItem.isComplement() && GenomeItem.isComplement())
+        || (borderPosition == 1 && !TransposonItem.isComplement() && !GenomeItem.isComplement())
+        || (borderPosition == 0 && TransposonItem.isComplement() && GenomeItem.isComplement()) )
+            genomePosition--;
+        if(useDoubleFlanks) {
+            if((borderPosition == 0 && !GenomeItem.isComplement()) || (borderPosition == 1 && GenomeItem.isComplement()))
+                readResult = readFromRawFile(genomeFilePath, genomePosition, 2*lengthTSD, lengthTSD);
+            if((borderPosition == 1 && !GenomeItem.isComplement()) || (borderPosition == 0 && GenomeItem.isComplement()))
+                readResult = readFromRawFile(genomeFilePath, genomePosition, lengthTSD, 2*lengthTSD);
+        }
+        else
+            readResult = readFromRawFile(genomeFilePath, genomePosition, lengthTSD, lengthTSD);
+        if(readResult != null) {
+            if(isTypeIIorientation(TransposonItem.isComplement(), GenomeItem.isComplement()))
+                return "(-)\n" + reverseComplement(readResult);
+            else
+                return "(+)\n" + readResult;
+        }
+        else
+            return null;
+    }
+    
+    /*
     * functie pentru citire din fisier .raw
-     * @param rawFilePath
-     * @param coordinate
-     * @param leftLengthExtract
-     * @param rightLengthExtract
-     * @return 
-    **/
+    */
     public static String readFromRawFile(String rawFilePath, int coordinate, int leftLengthExtract, int rightLengthExtract) throws IOException {
         File genomeFile = new File(rawFilePath);
         String outResult = null, textBlock = "";
@@ -796,11 +656,9 @@ public class FinalResultExporter {
     
     
     
-    /**
+    /*
     * antiparalel
-     * @param input
-     * @return 
-    **/
+    */
     public static String reverseComplement(String input) {
         String output = "";
 	int i;
@@ -821,10 +679,7 @@ public class FinalResultExporter {
     
     /**
      * verifica daca este nevoie de reversecomplement
-     * @param transposonSense
-     * @param genomeSense
-     * @return 
-     **/
+     */
     public static boolean doReverseComplement(boolean transposonSense, boolean genomeSense) {
         if((transposonSense && genomeSense) || (transposonSense && !genomeSense))
             return true;
@@ -834,10 +689,7 @@ public class FinalResultExporter {
     
     /**
      * verifica daca este orientare tip II
-     * @param transposonSense
-     * @param genomeSense
-     * @return 
-     **/
+     */
     public static boolean isTypeIIorientation(boolean transposonSense, boolean genomeSense) {
         if((transposonSense && !genomeSense) || (!transposonSense && genomeSense))
             return true;
@@ -871,9 +723,7 @@ public class FinalResultExporter {
     
     /**
      * Printez formularul cu Jasper Report
-     * @param mainResult
-     * @param sourceResult
-     **/
+     */
     public static void printReport(MainResult mainResult, FinalResultItem sourceResult) {
         JasperPrint jasperPrint = fillResultReport(mainResult, sourceResult);
         JasperViewer.viewReport(jasperPrint, false);

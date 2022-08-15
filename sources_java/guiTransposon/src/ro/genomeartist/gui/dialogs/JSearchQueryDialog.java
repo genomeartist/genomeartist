@@ -18,23 +18,17 @@
  */
 
 package ro.genomeartist.gui.dialogs;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JFileChooser;
 import ro.genomeartist.components.dialogs.JTwoButtonAbstractDialog;
 import ro.genomeartist.components.propertiespanel.AbstractPropertiesPanelModel;
 import ro.genomeartist.components.propertiespanel.IPropertiesEditor;
 import ro.genomeartist.components.propertiespanel.IPropertiesHeader;
 import ro.genomeartist.components.propertiespanel.JPropertiesPanel;
-import ro.genomeartist.components.propertiespanel.editors.JButtonPropertiesEditor;
 import ro.genomeartist.components.propertiespanel.editors.JCheckBoxPropertiesEditor;
 import ro.genomeartist.components.propertiespanel.editors.JTextAreaPropertiesEditor;
 import ro.genomeartist.components.propertiespanel.editors.JTextFieldPropertiesEditor;
 import ro.genomeartist.components.propertiespanel.headers.JLabelPropertiesHeader;
-import ro.genomeartist.gui.controller.externalcalls.ExternalLink;
 import ro.genomeartist.gui.controller.query.SearchQuery;
 import ro.genomeartist.gui.interfaces.IGlobalManager;
 import ro.genomeartist.gui.utils.DNAUtils;
@@ -126,30 +120,17 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
      */
     public List<SearchQuery> getSearchQueries() {
         List<SearchQuery> searchQueries = new LinkedList<SearchQuery>();
-        Boolean automaticNames = (Boolean) propertiesPanelModel.getValueAt(propertiesPanelModel.ROW_AUTOMATIC_NAMES);
-        String queryBaseName = null;
-        List<String> queryNames = null;
-        List<String> sequences = DNAUtils.extractCleanSequences(propertiesPanelModel.content);
         
         //Create query
-        if (!automaticNames) {
-            queryBaseName = StringUtils.sanitizeName(propertiesPanelModel.name);
-        } else {
-            queryNames = DNAUtils.getSequenceNames(propertiesPanelModel.content);
-            if (queryNames == null)
-                queryBaseName = StringUtils.sanitizeName(propertiesPanelModel.name);
-        }
+        String queryBaseName = StringUtils.sanitizeName(propertiesPanelModel.name);
+        List<String> sequences = DNAUtils.extractCleanSequences(propertiesPanelModel.content);
         boolean shouldCountQueries = sequences.size() > 1;
         for (int i = 0; i < sequences.size(); i++) {
             SearchQuery localQuery = new SearchQuery();
-            if (!automaticNames || queryNames == null) {
-                if (shouldCountQueries) {
-                    localQuery.setQueryName(queryBaseName+"_"+(i+1));
-                } else {
-                    localQuery.setQueryName(queryBaseName);
-                }
+            if (shouldCountQueries) {
+                localQuery.setQueryName(queryBaseName+"_"+(i+1));
             } else {
-                localQuery.setQueryName(queryNames.get(i));
+                localQuery.setQueryName(queryBaseName);
             }
             localQuery.setQueryContent(sequences.get(i));
             searchQueries.add(localQuery);
@@ -171,20 +152,15 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
         private static final int FIELD_WIDTH = 350;
         private static final int LABEL_WIDTH = 150;
         private static final int TEXTAREA_HEIGHT = 150;
-        private static final int NUMBER_ROWS = 5;
-        
+
         //Fac maparea numelor pe randuri
         public static final int ROW_NAME = 0;
         public static final int ROW_CONTENT = 1;
-        public static final int ROW_BROWSE = 2;
-        public static final int ROW_IS_REVERSE_COMPLEMENT = 3;
-        public static final int ROW_AUTOMATIC_NAMES = 4;
+        public static final int ROW_IS_REVERSE_COMPLEMENT = 2;
 
         //Private localValues;
         public String name = "query";
         public String content = "";
-        private boolean reverseComplement = false;
-        private boolean automaticNames = false; 
         
         
         /**
@@ -196,7 +172,7 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
 
         @Override
         public int getRowCount() {
-            return NUMBER_ROWS;
+            return 3;
         }
 
         @Override
@@ -210,8 +186,6 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                 case ROW_NAME:                      return String.class;
                 case ROW_CONTENT:                   return String.class;
                 case ROW_IS_REVERSE_COMPLEMENT:     return Boolean.class;
-                case ROW_AUTOMATIC_NAMES:           return Boolean.class;
-                case ROW_BROWSE:                    return String.class;
                 default:    assert false; return null;
             }
         }
@@ -222,8 +196,6 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                 case ROW_NAME:                      return "Query name";
                 case ROW_CONTENT:                   return "Query content";
                 case ROW_IS_REVERSE_COMPLEMENT:     return null;
-                case ROW_AUTOMATIC_NAMES:           return null;
-                case ROW_BROWSE:                    return null;
                 default:    assert false; return null;
             }
         }
@@ -237,14 +209,6 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                     return new JTextAreaPropertiesEditor(FIELD_ROWS, FIELD_WIDTH);
                 case ROW_IS_REVERSE_COMPLEMENT:
                     return new JCheckBoxPropertiesEditor("Reverse complement query");
-                case ROW_AUTOMATIC_NAMES:
-                    return new JCheckBoxPropertiesEditor("Automatically name queries");
-                case ROW_BROWSE:                    
-                    return new JButtonPropertiesEditor("Browse", new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                loadQueryAction();
-                            }
-                        });
                 default:    assert false; return null;
             }
         }
@@ -287,28 +251,6 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                     break;
             }
         }
-        
-    /**
-    * Lansez actiunea de Load
-    */
-        public void loadQueryAction() {
-            JFileChooser fc = new JFileChooser();
-            fc.setMultiSelectionEnabled(true);
-            fc.setAcceptAllFileFilterUsed(false);
-            
-            StringBuilder builder = new StringBuilder();
-            
-            int returnVal = fc.showOpenDialog(getParent());
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                final File[] files = fc.getSelectedFiles();
-                
-            for (File file : files) {
-                builder.append(ExternalLink.readFastaFile(file));
-            }
-            this.getEditorComponentAt(ROW_CONTENT).setValue(String.class, 
-                                builder.toString());
-            }
-        }
 
         @Override
         public boolean isRowOnNewline(int row) {
@@ -333,11 +275,7 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                 case ROW_CONTENT:
                     return content;
                 case ROW_IS_REVERSE_COMPLEMENT:
-                    return reverseComplement;
-                case ROW_AUTOMATIC_NAMES:
-                    return automaticNames;
-                case ROW_BROWSE:
-                    return content;
+                    return false;
                 default:    assert false; return null;
             }
         }
@@ -366,11 +304,7 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
                     hasChanged = true;
                     break;
                 case ROW_IS_REVERSE_COMPLEMENT:
-                    reverseComplement = (Boolean) newValue;
-                    hasChanged = false;
-                    break;
-                case ROW_AUTOMATIC_NAMES:
-                    automaticNames = (Boolean) newValue;
+                    //Do nothing
                     hasChanged = false;
                     break;
                 default:

@@ -38,7 +38,7 @@ import ro.genomeartist.gui.utils.JMyBoolean;
  */
 public class JExportDialog extends JTwoButtonAbstractDialog {
     //Constante pentru dimensiuni
-    private static final int FRAME_WIDTH = 680;
+    private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 380;
 
     //Constante
@@ -53,7 +53,6 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     private JMyBoolean isOk;
     
     private int[] intCoordinateArray;
-    private int numberOfResults;
     private int lengthExtractSeq;
     private int toleranceExtractSeq;
     private double consensusTreshold;
@@ -95,19 +94,9 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
         ArrayList<String> coordinateList = exportPane.getGenomeCoordinateList();
         if(coordinateList == null)
             coordinateList = new ArrayList<String>();
-        String numberOfResultsText = exportPane.getNumberOfResults();
         String lengthExtractSeqText = exportPane.getLengthExtractSeq();
         String toleranceExtractSeqText = exportPane.getToleranceExtractSeq();
         String consensusTresholdText = exportPane.getConsensusTreshold();
-        try {
-            numberOfResults = Integer.parseInt(numberOfResultsText);
-        } catch(NumberFormatException e) { 
-            JOptionPane.showMessageDialog(JExportDialog.this,
-                            "Number of results must be an Integer. A value less or equal to zero returns best score results.","Error",JOptionPane.ERROR_MESSAGE);
-            numberOfResults = -1;
-            isOk.setFalse();
-        }
-        
         try {
             lengthExtractSeq = Integer.parseInt(lengthExtractSeqText);
         } catch(NumberFormatException e) { 
@@ -116,7 +105,6 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
             lengthExtractSeq = -1;
             isOk.setFalse();
         }
-        
         try {
             toleranceExtractSeq = Integer.parseInt(toleranceExtractSeqText);
         } catch(NumberFormatException e) { 
@@ -125,7 +113,6 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
             toleranceExtractSeq = -1;
             isOk.setFalse();
         }
-        
         if(exportPane.getIsConsensusButtonSelected()) {
             try {
                 consensusTreshold = Integer.parseInt(consensusTresholdText);
@@ -171,10 +158,6 @@ public class JExportDialog extends JTwoButtonAbstractDialog {
     
     public int[] getGenomeCoordinateArray() {
         return intCoordinateArray;
-    }
-    
-    public int getNumberOfResults() {
-        return numberOfResults;
     }
     
     public int getLengthExtractSeq() {

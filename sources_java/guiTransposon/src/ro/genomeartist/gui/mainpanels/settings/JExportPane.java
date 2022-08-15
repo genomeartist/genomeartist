@@ -41,20 +41,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import ro.genomeartist.gui.controller.externalcalls.RawFileFilter;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
-import ro.genomeartist.components.autocompletecombobox.AutoCompleteComboBox;
 
 /**
  * Consturiesc panoul de export
  * @author ghita
  */
 public class JExportPane extends JPanel {
-    private static final String EXPORT_TABLE = "Export Aggregate Data to Table";
-    private static final String TSD_INSERTION = "TSD Sequence at Insertion Site";
-    private static final String FLANKING_INSERTION = "Flanking Seq. at Insertion Site";
-    private static final String FLANKING_TSD = "Flanking Seq. around Virtual TSD";
-    private static final String FLANKING_COORDINATE = "Flanking Seq. at Coordinate";
-    private static final String CONSENSUS ="Export Consensus Sequence";
-    
     private JRadioButton tableButton;
     private JRadioButton insertionTSDButton;
     private JRadioButton insertionFlankingButton;
@@ -63,13 +55,12 @@ public class JExportPane extends JPanel {
     private JCheckBox toggleConsensusButton;
     private JTextField coordinateField;
     private ArrayList<String> coordinateList;
-    private JTextField numberOfResultsField;
     private JButton browseCoordinateFileButton;
     private JTextField lengthExtractSeqField;
     private JTextField toleranceExtractSeqField;
     private JTextField consensusTresholdField;
     private ButtonGroup buttonGroup;
-    private AutoCompleteComboBox chromosomeFilesList;
+    private JComboBox chromosomeFilesList;
     private String[] chromosomeFileNames;
     private String[] chromosomeFilePaths;
     
@@ -92,13 +83,13 @@ public class JExportPane extends JPanel {
     }
     
     public JExportPane() {
-        tableButton = new JRadioButton(EXPORT_TABLE, true);
+        tableButton = new JRadioButton("Export Aggregate Data to Table", true);
         tableButton.setSelected(true);
-        insertionTSDButton = new JRadioButton(TSD_INSERTION, true);
-        insertionFlankingButton = new JRadioButton(FLANKING_INSERTION, true);
-        insertionTwoFlanksButton = new JRadioButton(FLANKING_TSD, true);
-        chooseCoordinateButton = new JRadioButton(FLANKING_COORDINATE, true);
-        toggleConsensusButton = new JCheckBox(CONSENSUS);
+        insertionTSDButton = new JRadioButton("TSD Sequence at Insertion Site", true);
+        insertionFlankingButton = new JRadioButton("Flanking Seq. at Insertion Site", true);
+        insertionTwoFlanksButton = new JRadioButton("Flanking Seq. around Virtual TSD", true);
+        chooseCoordinateButton = new JRadioButton("Flanking Seq. at Coordinate", true);
+        toggleConsensusButton = new JCheckBox("Export Consensus Sequence");
         tableButton.addActionListener(new EnableListener());
         chooseCoordinateButton.addActionListener(new EnableListener());
         insertionTSDButton.addActionListener(new EnableListener());
@@ -106,7 +97,7 @@ public class JExportPane extends JPanel {
         insertionTwoFlanksButton.addActionListener(new EnableListener());
         toggleConsensusButton.addActionListener(new EnableListener());
         coordinateField = new JTextField(15);
-        coordinateField.setEnabled(false);   
+        coordinateField.setEnabled(false);       
         browseCoordinateFileButton = new JButton("Browse");
         browseCoordinateFileButton.setEnabled(false);
         browseCoordinateFileButton.addActionListener(new ActionListener() {
@@ -123,9 +114,6 @@ public class JExportPane extends JPanel {
         buttonGroup.add(insertionTwoFlanksButton);
         buttonGroup.add(chooseCoordinateButton);
         
-        numberOfResultsField = new JTextField(15);
-        numberOfResultsField.setEditable(true);
-        numberOfResultsField.setText("0");
         lengthExtractSeqField = new JTextField(15);
         lengthExtractSeqField.setEditable(true);
         lengthExtractSeqField.setText("8");
@@ -146,10 +134,10 @@ public class JExportPane extends JPanel {
                 chromosomeFileNames[i] = chromosomeFileList[i].getName();
                 chromosomeFilePaths[i] = chromosomeFileList[i].getAbsolutePath();
             }
-            chromosomeFilesList = new AutoCompleteComboBox(chromosomeFileNames);
+            chromosomeFilesList = new JComboBox(chromosomeFileNames);
         }
         else
-            chromosomeFilesList = new AutoCompleteComboBox();
+            chromosomeFilesList = new JComboBox();
         chromosomeFilesList.setEnabled(false);
         chromosomeFilesList.setPreferredSize(new Dimension(15, 30));
         
@@ -178,20 +166,16 @@ public class JExportPane extends JPanel {
         gbc = makeGbc(2, 4, 1, 1, new Insets(5,5,5,5));
         this.add(browseCoordinateFileButton, gbc);
         gbc = makeGbc(0, 5, 1, 1, new Insets(5,5,5,5));
-        this.add(new JLabel("Num. Exported Results (def. best score)"), gbc);
-        gbc = makeGbc(1, 5, 1, 1, new Insets(5,5,5,5));
-        this.add(numberOfResultsField, gbc);
-        gbc = makeGbc(0, 6, 1, 1, new Insets(5,5,5,5));
         this.add(new JLabel("Length of TSD/Flank"), gbc);
-        gbc = makeGbc(1, 6, 1, 1, new Insets(5,5,5,5));
+        gbc = makeGbc(1, 5, 1, 1, new Insets(5,5,5,5));
         this.add(lengthExtractSeqField, gbc);
-        gbc = makeGbc(0, 7, 1, 1, new Insets(5,5,5,5));
-        this.add(new JLabel("Tolerance Length"), gbc);
-        gbc = makeGbc(1, 7, 1, 1, new Insets(5,5,5,5));
+        gbc = makeGbc(0, 6, 1, 1, new Insets(5,5,5,5));
+        this.add(new JLabel("Size of Tolerance"), gbc);
+        gbc = makeGbc(1, 6, 1, 1, new Insets(5,5,5,5));
         this.add(toleranceExtractSeqField, gbc);
-        gbc = makeGbc(0, 8, 1, 1, new Insets(5,5,5,5));
+        gbc = makeGbc(0, 7, 1, 1, new Insets(5,5,5,5));
         this.add(new JLabel("Consensus Treshold (%)"), gbc);
-        gbc = makeGbc(1, 8, 1, 1, new Insets(5,5,5,5));
+        gbc = makeGbc(1, 7, 1, 1, new Insets(5,5,5,5));
         this.add(consensusTresholdField, gbc);
     }
     
@@ -254,10 +238,6 @@ public class JExportPane extends JPanel {
     
     public String getGenomeCoordinate() {
         return coordinateField.getText();
-    }
-    
-    public String getNumberOfResults() {
-        return numberOfResultsField.getText();
     }
     
     public ArrayList<String> getGenomeCoordinateList() {

@@ -45,8 +45,6 @@ public class JToolbarFereastraIcons implements IGlobalClass {
     public static final int SEARCH = 4;
     public static final int SETTINGS = 5;
     public static final int EXPORT = 6;
-    public static final int LIGHT = 7;
-
 
     //Icoane
     private Image iconLoad;
@@ -55,7 +53,6 @@ public class JToolbarFereastraIcons implements IGlobalClass {
     private Image iconSearch;
     private Image iconSettings;
     private Image iconExport;
-
 
     private ImageIcon imageIconLoad;
     private ImageIcon imageIconSave;
@@ -109,7 +106,6 @@ public class JToolbarFereastraIcons implements IGlobalClass {
         iconsPath = iconsFolder + ReadOnlyConfiguration.getString("TOOLBAR_FEREASTRA_ICONS_EXPORT");
         iconExport = MyUtils.createImage(iconsPath);
         imageIconExport =  new ImageIcon(iconExport);
-        
     }
     
     /**

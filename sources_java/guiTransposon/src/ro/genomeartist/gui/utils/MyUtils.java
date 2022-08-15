@@ -56,11 +56,7 @@ public class MyUtils {
     public final static String CSV_EXT = "csv";
     public final static String ODS_EXT = "ods";
     public final static String FASTA_EXT = "fasta";
-    public final static int COLUMNS_NUMBER = 17;
-    public final static String[] TABLE_HEADER = new String[]{"Query", "Genomic Reference Sequence", "Transposon/Mobile Element", 
-        "Insertion Coordinate/TGN", "Outermost Alignment Coordinate", "Transposon Insertion Coordinate", "Transposon Outermost Coordinate",
-        "Genome Query Start", "Genome Query Stop", "TE Query Start", "TE Query Stop", "Hit Gene(s)", "Upstream Gene", "Downstream Gene", 
-        "Alignment Score", "TSD", "Possible Artifact"};
+    public final static int COLUMNS_NUMBER = 12;
 
     //Unitati de masura timp
     private static final int MINUTES_2_SECONDS = 60;

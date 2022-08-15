@@ -171,7 +171,7 @@ public class JInfoQueryPanel extends JPanel {
         panel.add(Box.createHorizontalGlue());
         panel.add(label2);
 
-        //label2.setForeground(DrawingConstants.COLOR_GENOM_BORDER);
+        label2.setForeground(DrawingConstants.COLOR_GENOM_BORDER);
 
         return panel;
     }
