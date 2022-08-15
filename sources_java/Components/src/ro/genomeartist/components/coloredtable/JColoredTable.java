@@ -19,6 +19,7 @@
 
 package ro.genomeartist.components.coloredtable;
 
+import java.awt.Color;
 import ro.genomeartist.coloredtable.cellrenderers.AbstractColoredCellRenderer;
 import ro.genomeartist.coloredtable.cellrenderers.DefaultColoredCellRenderer;
 import ro.genomeartist.components.jtable.configuredtable.JExenneAbstractTable;
@@ -51,6 +52,11 @@ public class JColoredTable extends JExenneAbstractTable {
         
         //Inregistrez ascultator de mouse
         this.addMouseListener(mouseListener);
+        
+        // Setez culoarea textului din tabel sa fie intotdeauna neagra
+        this.setForeground(new Color(0, 0, 0));
+        super.setSelectionForeground(new Color(255, 255, 255));
+        super.setSelectionBackground(new Color(159, 182, 204));
     }
 
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

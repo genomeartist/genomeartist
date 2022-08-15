@@ -399,6 +399,27 @@ public class ExternalLink {
        //Intorc numarul de inregistrari
         return counter;
      }
+     
+     /**
+      * Incarca fisier fasta
+      * @param fastaFile 
+      */
+     public static String readFastaFile(File fastaFile) {
+        String line, output = "";
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fastaFile));
+            while ((line = in.readLine()) != null) {
+                output += line + "\n";
+            }
+        }
+        catch(FileNotFoundException ex){
+          System.out.println(ex.getMessage() + " in the specified directory.");
+        }
+        catch(IOException e){
+          System.out.println(e.getMessage());
+        }
+        return output;
+     }
 
      /**
       * Copiaza un fisier

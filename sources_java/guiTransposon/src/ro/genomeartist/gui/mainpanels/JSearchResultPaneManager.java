@@ -112,26 +112,41 @@ public class JSearchResultPaneManager extends JPanel implements ILocalManager {
     
     /**
      * Exporta cele mai bune rezultate ca tabel
-     * @param exportResult
+     * @param sourceResult
+     * @param lengthSeqExtract
+     * @param lengthTolerance
+     * @return 
      */
-    public ArrayList<String[]> getBestResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
-        return FinalResultExporter.getBestResultsInsertionData(sourceResult, lengthSeqExtract, lengthTolerance);
+    public ArrayList<String[]> getResultsInsertionData(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance, int numberOfResults) {
+        return FinalResultExporter.getResultsInsertionData(sourceResult, lengthSeqExtract, lengthTolerance, numberOfResults);
     }
     
     /**
      * Exporta cele mai bune rezultate flancatoare ca fasta
-     * @param exportResult
+     * @param sourceResult
+     * @param useDoubleFlanks
+     * @param lengthTolerance
+     * @param lengthSeqExtract
+     * @param folderPath
+     * @param numberOfResults
+     * @param toggleConsensus
+     * @return 
      */
-    public String getBestResultsFlankingSeq(MainResult sourceResult, boolean useDoubleFlanks, int lengthSeqExtract, int lengthTolerance, String folderPath) throws IOException {
-        return FinalResultExporter.getBestResultsFlankingSeq(sourceResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, folderPath);
+    public ArrayList<String> getResultsFlankingSeq(MainResult sourceResult, boolean useDoubleFlanks, int lengthSeqExtract, int lengthTolerance, int numberOfResults, boolean toggleConsensus, String folderPath) throws IOException {
+        return FinalResultExporter.getResultsFlankingSeq(sourceResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, numberOfResults, toggleConsensus, folderPath);
     }
     
     /**
      * Exporta cele mai bune rezultate TDS ca fasta
-     * @param exportResult
+     * @param sourceResult
+     * @param lengthSeqExtract
+     * @param lengthTolerance
+     * @param numberOfResults
+     * @param toggleConsensus
+     * @return 
      */
-    public String getBestResultsTSD(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance) {
-        return FinalResultExporter.getBestResultsTSD(sourceResult, lengthSeqExtract, lengthTolerance);
+    public ArrayList<String> getResultsTSD(MainResult sourceResult, int lengthSeqExtract, int lengthTolerance, int numberOfResults, boolean toggleConsensus) {
+        return FinalResultExporter.getResultsTSD(sourceResult, lengthSeqExtract, lengthTolerance, numberOfResults, toggleConsensus);
     }
 
     /**

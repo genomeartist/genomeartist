@@ -88,6 +88,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import javax.swing.JCheckBox;
 import ro.genomeartist.gui.controller.exporters.FinalResultExporter;
 import ro.genomeartist.gui.dialogs.JExportDialog;
 import ro.genomeartist.gui.utils.NaturalOrderComparator;
@@ -101,8 +104,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
     //      Sectiunea in care definesc variabile            /
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
-    private final static String LOOKANDFEEL = "System"; //Look and feel-ul folosit
+    private final static String LOOKANDFEEL = "FlatLaf"; //Look and feel-ul folosit
     private final static String THEME = "Ocean";     // Tema folosita pentru Metal
+    private static boolean DARK_THEME = false;
 
     //~~~~~~~~~ Top level panes ~~~~~~~~~/
     private Container contentPane;  //Containerul principal
@@ -126,7 +130,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String NAME_SAVE_AS = "Save As";
     private final static String NAME_SETTINGS = "Settings";
     private final static String NAME_EXPORT = "Export Data to File";
-    private final static String NAME_EXPORT_FLANKINGSEQ = "Export Flanking Sequences";
+    private final static String NAME_THEME = "Dark Theme";
     private final static String NAME_EXIT = "Exit";
 
     private final static String ACTION_SEARCH = NAME_SEARCH.toLowerCase();
@@ -135,6 +139,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String ACTION_SAVE_AS = NAME_SAVE_AS.toLowerCase();
     private final static String ACTION_SETTINGS = NAME_SETTINGS.toLowerCase();
     private final static String ACTION_EXPORT = NAME_EXPORT.toLowerCase();
+    private final static String ACTION_THEME = NAME_THEME.toLowerCase();
     private final static String ACTION_EXIT = NAME_EXIT.toLowerCase();
 
     //~~~~~~~~~Obiecte proprii~~~~/
@@ -150,6 +155,8 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         ReadOnlyConfiguration.init();
         ReadWriteConfiguration.init();
         MyGlobalClasses.init();
+        
+        DARK_THEME = Boolean.parseBoolean((String)ReadWriteConfiguration.get("THEME"));
 
         //Incarc configurarile la server
         generalSettings = new GeneralSettings();
@@ -251,7 +258,10 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private void initLookAndFeel() {
         String lookAndFeel = null;
         if (LOOKANDFEEL != null) {
-            if (LOOKANDFEEL.equals("Metal")) {
+            if (LOOKANDFEEL.equals("FlatLaf")) {
+                lookAndFeel = "FlatLaf";
+            }
+            else if (LOOKANDFEEL.equals("Metal")) {
                 lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
               //  an alternative way to set the Metal L&F is to replace the
               // previous line with:
@@ -271,10 +281,16 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                                    + LOOKANDFEEL);
                 lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
             }
+            
             try {
-                UIManager.setLookAndFeel(lookAndFeel);
+               if (LOOKANDFEEL.equals("FlatLaf")) {
+                   if (!DARK_THEME) 
+                        UIManager.setLookAndFeel(new FlatLightLaf());
+                   else if (DARK_THEME)
+                        UIManager.setLookAndFeel(new FlatDarkLaf());
+               }
                 // If L&F = "Metal", set the theme
-               if (LOOKANDFEEL.equals("Metal")) {
+               else if (LOOKANDFEEL.equals("Metal")) {
                   if (THEME.equals("DefaultMetal"))
                      MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
                   else if (THEME.equals("Ocean"))
@@ -283,12 +299,12 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 }
             }
 
-            catch (ClassNotFoundException e) {
-                System.err.println("Couldn't find class for specified look and feel:"
-                                   + lookAndFeel);
-                System.err.println("Did you include the L&F library in the class path?");
-                System.err.println("Using the default look and feel.");
-            }
+//            catch (ClassNotFoundException e) {
+//                System.err.println("Couldn't find class for specified look and feel:"
+//                                   + lookAndFeel);
+//                System.err.println("Did you include the L&F library in the class path?");
+//                System.err.println("Using the default look and feel.");
+//            }
 
             catch (UnsupportedLookAndFeelException e) {
                 System.err.println("Can't use the specified look and feel ("
@@ -419,6 +435,11 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             item.addActionListener(menuListener);
             item.setActionCommand(ACTION_EXPORT);
         menu1.add(item);
+        
+        item= new JMenuItem(NAME_THEME);
+            item.addActionListener(menuListener);
+            item.setActionCommand(ACTION_THEME);
+        menu1.add(item);
 
         menu1.addSeparator();
 
@@ -504,7 +525,16 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             button.setToolTipText("Export Data to File");
             button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.EXPORT));
             button.setFocusable(false);
-        localToolBar.add(button);                
+        localToolBar.add(button);
+        
+        localToolBar.addSeparator();
+        
+        JCheckBox checkbox = new JCheckBox(NAME_THEME, DARK_THEME);
+            checkbox.setActionCommand(ACTION_THEME);
+            checkbox.addActionListener(menuListener);
+            checkbox.setToolTipText("Toggle Dark/Light Theme");
+            checkbox.setFocusable(false);
+        localToolBar.add(checkbox); 
 
         //Adaug sigla la sfarsit
         JBrandingImages brandingImages = (JBrandingImages) MyGlobalClasses
@@ -725,7 +755,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                         //Copiez fisierul in locul corespunzator
                         MainResult mainResult = selectedComponent.getMainResult();
                         File source = mainResult.backgroundFile;
-                        //Savez fizic rezultatul si apoi il copiez
+                        //Salvez fizic rezultatul si apoi il copiez
                         ExternalLink.saveBestResult(mainResult);
                         ExternalLink.copyFile(source, destination);
                         mainResult.backgroundFile = destination;
@@ -750,6 +780,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         int[] genomeCoordinateArray;
         int lengthExtractSeq;
         int toleranceExtractSeq;
+        int numberOfResults;
         final JExportDialog exportDialog = new JExportDialog(
                 RootFrame.this, "Export to FASTA", true, isOk);
         exportDialog.setVisible(true);
@@ -757,22 +788,37 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         if(isOk.isTrue()) {
             lengthExtractSeq = exportDialog.getLengthExtractSeq();
             toleranceExtractSeq = exportDialog.getToleranceExtractSeq();
+            numberOfResults = exportDialog.getNumberOfResults();
             boolean toggleConsensus = exportDialog.getIsConsensusButtonSelected();
             double consensusTreshold = exportDialog.getConsensusTreshold();
             if(exportDialog.getIsChooseButtonSelected()) {
                 chromosomeFilePath = exportDialog.getChromosomeFilePath();
                 genomeCoordinateArray = exportDialog.getGenomeCoordinateArray();
                 exportSequenceAtCoordinate(chromosomeFilePath, genomeCoordinateArray, lengthExtractSeq);
-            }            
+            }
             if(exportDialog.getIsTSDButtonSelected())
-                exportSequencesAtBorder(true, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+                exportSequencesAtBorder(true, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq, numberOfResults);
             if(exportDialog.getIsFlankingButtonSelected())
-                exportSequencesAtBorder(false, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+                exportSequencesAtBorder(false, false, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq, numberOfResults);
             if(exportDialog.getIsTwoFlanksButtonSelected())
-                exportSequencesAtBorder(false, true, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq);
+                exportSequencesAtBorder(false, true, toggleConsensus, consensusTreshold, lengthExtractSeq, toleranceExtractSeq, numberOfResults);
             if(exportDialog.getIsTableButtonSelected())
-                exportTable(lengthExtractSeq, toleranceExtractSeq);
+                exportTable(lengthExtractSeq, toleranceExtractSeq, numberOfResults);
         }
+    }
+    
+    /**
+     * Lansez actiunea de schimbare tema
+     */
+    public void fireActionChangeTheme() {
+        if (DARK_THEME)
+            DARK_THEME = false;                      
+        else if (!DARK_THEME)
+            DARK_THEME = true;         
+        ReadWriteConfiguration.put("THEME", DARK_THEME);
+        ReadWriteConfiguration.commitSettings();
+        initLookAndFeel();
+        SwingUtilities.updateComponentTreeUI(RootFrame.this);
     }
     
     /**
@@ -830,6 +876,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     
     /**
      * fuctie petru salvare in fisier fasta sau csv
+     * @param filetype
+     * @param tableData
+     * @param fastaData
      */
     public void saveToFile(String filetype, ArrayList<String[]> tableData, ArrayList<String> fastaData) {
         JFileChooser auxfc = new JFileChooser();
@@ -865,17 +914,19 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     
     /**
      * Lansez actiunea de exportare rezultatele cele mai bune
+     * @param lengthTSD
+     * @param lengthTolerance
      */
-    public void exportTable(int lengthTSD, int lengthTolerance) {
+    public void exportTable(int lengthTSD, int lengthTolerance, int numberOfResults) {
         ArrayList<String[]> bestResultData = new ArrayList<String[]>();
         ArrayList<String[]> bestResultsBatch;
-        bestResultData.add(new String[]{"Query", "Genomic Reference Sequence", "Transposon/Mobile Element", "Insertion Coordinate/TGN", "Transposon Coordinate" ,"Hit Gene(s)", "Upstream Gene", "Downstream Gene", "Alignment Score", "TSD", "Outermost Alignment Coordinate", "Possible Artefact"});
+        bestResultData.add(MyUtils.TABLE_HEADER);
         
         for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
             JSearchResultPaneManager auxComponent = (JSearchResultPaneManager) tabbedpane.getComponentAt(i);            
             MainResult auxMainResult = auxComponent.getMainResult();
             if(auxMainResult.bestResult != null) {
-                bestResultsBatch = auxComponent.getBestResultsInsertionData(auxMainResult, lengthTSD, lengthTolerance);
+                bestResultsBatch = auxComponent.getResultsInsertionData(auxMainResult, lengthTSD, lengthTolerance, numberOfResults);
                 bestResultData.addAll(bestResultsBatch);
             }
         }
@@ -885,9 +936,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     /*
     / functie pt entragerea flanking sequeces in fisier .raw de la border-ulfiecarui Best Result din taburi
     */
-    private void exportSequencesAtBorder(boolean useTSD, boolean useDoubleFlanks, boolean toggleConsensus, double consensusTreshold, int lengthSeqExtract, int lengthTolerance) {
-        ArrayList<String> bestResultData = new ArrayList<String>();
-        String bestResult;
+    private void exportSequencesAtBorder(boolean useTSD, boolean useDoubleFlanks, boolean toggleConsensus, double consensusTreshold, int lengthSeqExtract, int lengthTolerance, int numberOfResults) {
+        ArrayList<String> resultData = new ArrayList<String>();
+        ArrayList<String> result;
         String folderRaw = ReadOnlyConfiguration.getString("FOLDER_RAW");
         
         for(int i = 0; i < tabbedpane.getTabCount(); i++) {            
@@ -895,34 +946,29 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             MainResult auxMainResult = auxComponent.getMainResult();
             if(auxMainResult.bestResult != null) {
                 if(useTSD)
-                    bestResult = auxComponent.getBestResultsTSD(auxMainResult, lengthSeqExtract, lengthTolerance);
+                    result = auxComponent.getResultsTSD(auxMainResult, lengthSeqExtract, lengthTolerance, numberOfResults, toggleConsensus);
                 else {
                     try {
-                        bestResult = auxComponent.getBestResultsFlankingSeq(auxMainResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, folderRaw);
+                        result = auxComponent.getResultsFlankingSeq(auxMainResult, useDoubleFlanks, lengthSeqExtract, lengthTolerance, numberOfResults, toggleConsensus, folderRaw);
                     } catch (IOException e) {
                         JOptionPane.showMessageDialog(RootFrame.this,
                                     "Raw file not found" + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
-                        bestResult = null;
+                        result = null;
                         return;
                     }
                 }
-                if(bestResult != null) {
-                    if(!toggleConsensus)
-                        bestResult = ">" + auxMainResult.infoQuery.queryName + bestResult + "\n";
-                    else
-                        bestResult = bestResult.replaceAll("[(\\-+)\n]","");
-                    bestResultData.add(bestResult);
-                }
+                if(result != null && !result.isEmpty())
+                    resultData.addAll(result);
             }
         }
-        if(bestResultData.isEmpty())
+        if(resultData.isEmpty())
             JOptionPane.showMessageDialog(RootFrame.this,
                         "No jonction border detected","Error",JOptionPane.ERROR_MESSAGE);
         if(toggleConsensus) {
-            saveToFile(MyUtils.FASTA_EXT, null, MyUtils.getConsensus(bestResultData, consensusTreshold));
+            saveToFile(MyUtils.FASTA_EXT, null, MyUtils.getConsensus(resultData, consensusTreshold));
         }
         else
-            saveToFile(MyUtils.FASTA_EXT, null, bestResultData);
+            saveToFile(MyUtils.FASTA_EXT, null, resultData);
     }
     
     /*
@@ -987,6 +1033,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 } else
                 if (ACTION_EXPORT.equals(cmd)) {
                     fireActionExport();
+                } else
+                if (ACTION_THEME.equals(cmd)) {
+                    fireActionChangeTheme();
                 } else
                 if (ACTION_EXIT.equals(cmd)) {
                     fireActionExit();

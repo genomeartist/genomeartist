@@ -42,6 +42,7 @@ public class JButtonPropertiesEditor extends JPanel
     //Variabilele clasei
     private JButton mainButton;
     private Runnable runnable;
+    private String textfield;
 
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *    Constructori
@@ -68,6 +69,17 @@ public class JButtonPropertiesEditor extends JPanel
     }
     
     /**
+     * Creez un editor cu button cu textul si ascultatorul specificat
+     * @param buttonText 
+     */
+    public JButtonPropertiesEditor(String buttonText, ActionListener listener) {
+        super();
+        JButton button =  new JButton();
+        button.setText(buttonText);
+        init(button, listener);
+    }
+    
+    /**
      * Functia de initializare
      * @param button 
      */
@@ -77,6 +89,7 @@ public class JButtonPropertiesEditor extends JPanel
         //Creez componentele
         mainButton = button;
         runnable = null;
+        textfield = "";
 
         //Setez butonul
         mainButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -88,6 +101,29 @@ public class JButtonPropertiesEditor extends JPanel
         //Initializez ascultatorii
         editorChangeListeners = new Vector<IEditorChangeListener>();
     }
+    
+    /**
+     * Initializare cu event listener
+     */
+    private void init(JButton button, ActionListener listener) {
+        this.setLayout(new BorderLayout());
+
+        //Creez componentele
+        mainButton = button;
+        runnable = null;
+        textfield = "";
+
+        //Setez butonul
+        mainButton.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        editorChangeListeners = new Vector<IEditorChangeListener>();
+        mainButton.addActionListener(listener);
+
+        //Setez panoul
+        this.add(mainButton, BorderLayout.EAST);
+
+    }
+    
 
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *    Se implementeaza interfata IPropertiesEditor
@@ -130,7 +166,9 @@ public class JButtonPropertiesEditor extends JPanel
         if (Runnable.class == objectClass) {
             auxRunnable = (Runnable) renderedObject;
             runnable = auxRunnable;
-        } else
+        } else if (String.class == objectClass) 
+            textfield = (String) renderedObject;
+        else
             throw new UnsupportedOperationException(objectClass+" not supported in JColorIcon");
     }
 
@@ -141,9 +179,11 @@ public class JButtonPropertiesEditor extends JPanel
      */
     public Object getValue(Class objectClass) {
         //Obtin obiectul din textfield
-        if (Runnable.class == objectClass) {
+        if (Runnable.class == objectClass)
             return runnable;
-        } else
+        else if (String.class == objectClass)
+            return textfield;
+        else
             throw new UnsupportedOperationException(objectClass+" not supported in JColorIcon");
     }
 
