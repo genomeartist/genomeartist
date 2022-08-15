@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -30,7 +32,7 @@ import java.util.StringTokenizer;
  */
 public class DNAUtils {
     
-    
+    private static final int OUTPUT_NAME_TRIM = 30;
     
     /**
      * Fac reverse complement la un string
@@ -64,7 +66,7 @@ public class DNAUtils {
      */
     public static List<String> extractCleanSequences(String content) {
         //Detect format
-        String squeezedContent = StringUtils.squeezeString(content);
+        String squeezedContent = StringUtils.squeezeString(content).trim();
 
         //FASTA. begins with ">"
         //GENBANK. ends with "\\" and contains keywork ORIGIN
@@ -214,6 +216,42 @@ public class DNAUtils {
         }
         
         return sequences;
+    }
+    
+    /**
+     * Obtine numele secventei
+     */
+    public static List<String> getSequenceNames(String content) {
+        String squeezedContent = StringUtils.squeezeString(content).trim();
+        //FASTA. begins with ">"
+        //GENBANK. ends with "\\" and contains keywork ORIGIN
+        //RAW. separated by empty lines
+        List<String> names = new LinkedList<String>();
+        if (squeezedContent.startsWith(">") || squeezedContent.startsWith(";")) {
+            StringTokenizer st = new StringTokenizer(content,"\n",false);
+            String auxString;
+            while (st.hasMoreElements()) {
+                auxString = StringUtils.squeezeString(st.nextToken());
+                if (auxString.startsWith(">")) {
+                    names.add(auxString.substring(1, Math.min(auxString.length(), OUTPUT_NAME_TRIM+1)));
+                }
+            }
+        } else if (squeezedContent.contains("ORIGIN") && squeezedContent.endsWith("//")) {
+            StringTokenizer st = new StringTokenizer(content,"\n",false);
+            String auxString;
+            while (st.hasMoreElements()) {
+                auxString = StringUtils.squeezeString(st.nextToken());
+                if (auxString.toLowerCase().startsWith("accession")) {
+                    Pattern pattern = Pattern.compile("accession", Pattern.CASE_INSENSITIVE);
+                    Matcher match = pattern.matcher(auxString);
+                    auxString = match.replaceAll("");
+                    names.add(auxString.substring(0, Math.min(auxString.length(), OUTPUT_NAME_TRIM)));
+                }
+            }
+        } else {
+            return null;
+        }
+        return names;
     }
     
     /**
