@@ -330,8 +330,10 @@ public class FinalResultExporter {
                 codifiedInsertionPosition[0] = 1;//TransposonItem = intervalMappingSet.elementAt(1);
                 codifiedInsertionPosition[1] = 0;//GenomeItem = intervalMappingSet.elementAt(0);
                 codifiedInsertionPosition[2] = 0;//borderPosition = 0;
-            }                      
-        }              
+            }
+            else
+                codifiedInsertionPosition[0] = codifiedInsertionPosition[1] = codifiedInsertionPosition[2] = codifiedInsertionPosition[3] = -1;
+        }
         else if(intervalMappingSet.size() == 3) {
             codifiedInsertionPosition[3] = 1;
             // cazul transpozon-genom-transpozon
@@ -419,6 +421,8 @@ public class FinalResultExporter {
                 codifiedInsertionPosition[1] = 0;//GenomeItem = intervalMappingSet.elementAt(0);
                 codifiedInsertionPosition[2] = 0;//borderPosition = 1;
             }
+            else
+                codifiedInsertionPosition[0] = codifiedInsertionPosition[1] = codifiedInsertionPosition[2] = codifiedInsertionPosition[3] = -1;
         }
         else if(intervalMappingSet.size() == 1 && !intervalMappingSet.elementAt(0).isTransposon()) {
             codifiedInsertionPosition[0] = -2;
