@@ -8,3 +8,49 @@ To some extent, Genome ARTIST is an alternative for the classical alignment algo
 
 
 Genome ARTIST is the result of an interdisciplinary collaboration between researchers from the Department of Genetics, University of Bucharest, and computer engineers, graduates of "Politehnica" University of Bucharest, PUB. The authors of the software are Alexandru Al. Ecovoiu, Iulian Constantin Ghionoiu, Andrei Mihai Ciuca, Iulian Cristian Ghita and Attila Cristian Ratiu.
+
+
+
+# INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 LINUX
+
+To compile the Genome ARTIST software, you need jdk-8. To install this version, and to replace the current one, you need to run the following commands:
+
+1. Install jdk-8:
+
+        sudo apt-get install openjdk-8-jdk
+
+2. List installed versions of java
+
+        update-alternatives --list java
+
+3.Configure java installation:
+
+        sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java 1
+
+4. Display installed versions of java and configure the version you want to use:
+
+        update-alternatives --display java
+
+        sudo update-alternatives --config java
+
+Choose jdk-8 entering the corresponding number.
+
+5. Check the current version:
+
+        java -version
+
+6. Next, download the uncompiled package of Genome ARTIST from github: https://github.com/genomeartist/genomeartist. Afterwards, install the compilation dependencies by running the following commands:
+
+        sudo apt install make
+        sudo apt install ant
+        sudo apt install build-essential
+
+7. In the sources_c directory run the following command:
+        
+        make
+
+8. In the ant_build directory run the following command:
+        
+        ant genomeless
+
+Compilation generates the genomeless directory where you find the Genome-ARTIST.sh file. Before accessing it, make sure it is executable.
