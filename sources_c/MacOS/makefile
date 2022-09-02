@@ -1,6 +1,6 @@
 CC = g++
 DEBUG = -g
-PROFILE = -pg
+PROFILE = -fprofile-instr-generate
 CFLAGS = -m64 -Wall -W $(DEBUG) $(PROFILE)
 LDFLAGS = -m64 $(PROFILE)
 CALE = ./src/cod
