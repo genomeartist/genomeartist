@@ -11,7 +11,7 @@ Genome ARTIST is the result of an interdisciplinary collaboration between resear
 
 
 
-# INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 LINUX
+## INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 LINUX
 
 To compile the Genome ARTIST software, you need jdk-8. To install this version, and to replace the current one, you need to run the following commands:
 
@@ -39,7 +39,7 @@ Choose jdk-8 entering the corresponding number.
 
         java -version
 
-6. Next, download the uncompiled package of Genome ARTIST from github: https://github.com/genomeartist/genomeartist. Afterwards, install the compilation dependencies by running the following commands:
+6. Next, download the uncompiled package of Genome ARTIST from GitHub: https://github.com/genomeartist/genomeartist. Afterwards, install the compilation dependencies by running the following commands:
 
         sudo apt install make
         sudo apt install ant
@@ -54,3 +54,15 @@ Choose jdk-8 entering the corresponding number.
         ant genomeless
 
 Compilation generates the genomeless directory where you find the Genome-ARTIST.sh file. Before accessing it, make sure it is executable.
+
+
+
+### INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 MacOS (tested on High Sierra 10.13)
+
+1. Download the uncompiled package of Genome ARTIST_v2 from GitHub.
+
+2. Replace the makefile from sources_c directory with the makefile from sources_c/MacOS, and run *make* command in the terminal (in the sources_c directory).
+
+3. In the ant_build directory run the *ant genomeless* command (if MacOS version is too old and *brew install ant* is failing, you have to manual download the latest version of ant (from https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz), uncompress it and run ant directly from the bin folder.
+
+4. In the final step, copy and replace the following files: cleaner, client, data_hashing_utility, run_expansion_generation and server; from sources_c directory to GA_v2 installation directory (genomeless).
