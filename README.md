@@ -66,3 +66,31 @@ Compilation generates the genomeless directory where you find the Genome-ARTIST.
 3. In the ant_build directory run the *ant genomeless* command (if MacOS version is too old and *brew install ant* is failing, you have to manual download the latest version of ant (from https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz), uncompress it and run ant directly from the bin folder.
 
 4. In the final step, copy and replace the following files: cleaner, client, data_hashing_utility, run_expansion_generation and server; from sources_c directory to GA_v2 installation directory (genomeless).
+
+
+
+### INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 Windows
+
+1. Download the uncompiled package of Genome ARTIST_v2 from GitHub (https://github.com/genomeartist/genomeartist) and the compiled package for Linux from genomeartist.ro (https://genomeartist.ro/download.html).
+
+2. Download and install **Visual Studio Community 2017**. Open Visual Studio Community 2017 and:
+ 
+      2.1. *Select File -> Open -> /Project/Solution*
+           Pick ***genomeartist-master\sources_c\Windows\GenomeArtist.sln***
+       
+      2.2. *Go to Build -> Configuration Manager*
+           Active solution configuration: pick **Release**
+           Active solution platform: pick **x64**
+       
+      2.3. *Go to Build, click Rebuild Solution*.
+  
+3. Copy the following files from uncompiled ***genomeartist-master\sources_c\Windows\x64\Release*** in the compiled GenomeARTIST directory:
+       
+      - client.exe as **client**;
+      - cleaner.exe as **cleaner**;
+      - data_hashing_utility.exe as **data_hashing_utility**;
+      - GA_support_service.exe as **GA_support_service**;
+      - run_expansion_generation.exe as **run_expansion_generation**;
+      - server.exe as **server**.
+
+4. Run **genomeARTIST.jar**.
