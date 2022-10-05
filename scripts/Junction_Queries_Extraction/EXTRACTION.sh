@@ -1,47 +1,99 @@
 #!/bin/bash
 
-echo "TE Reference length"
+echo "TE reference length"
 read Qlength
- 
+
+echo "Length of a putative insertion/autoinsertion (in the TE sequence of interest) that may increase the TE sequence length compared to the TE reference length:"
+read extensie
+
+TEextensie=$( expr $Qlength + $extensie )
+
 cat *.csv > GA.csv
 
 #Extrag coloane de care am nevoie.
 awk -F "," 'NR >=2 {print$1,$2,$4,$5,$8,$9}' GA.csv > GA.txt
 
-#Sortez si export unicele.
-awk -F "," '{print $2}' GA.csv | sort | uniq -u > GA.sort.txt
-
 #Parcurg fisierul cu toate rezultatele (GA.txt).
-cat GA.txt | while read query genomic gstart gend qstart qend
+cat GA.txt | while read query GD gstart gend qstart qend
 do
-
-#Parcurg fisierul cu unicele.
-cat GA.sort.txt | while read uniq
-do
-
-#Unde gaseste unica in toate rezultatele printeaza coloanele in fisiere .uniq.txt.
-if [[ $genomic == $uniq ]]
+#Orientare II, 5'.
+if [[ $gstart -gt $gend ]] && [[ $query == *"5" ]]
 then
-echo $query $genomic $gstart $gend $qstart $qend > $genomic.$gstart.1IR.txt
-sed -i "/$genomic/d" ./GA.txt
+echo $query $GD $gstart $gend $qstart $qend >> IR5.orientare2.txt
+#Orientare II, 3'.
+elif [[ $gstart -gt $gend ]] && [[ $query == *"3" ]]
+then
+echo $query $GD $gstart $gend $qstart $qend >> IR3.orientare2.txt
 
+#Orientare I, 5'.
+elif [[ $gstart -lt $gend ]] && [[ $query == *"5" ]]
+then
+echo $query $GD $gstart $gend $qstart $qend >> IR5.orientare1.txt
+#Orientare I, 3'.
+elif [[ $gstart -lt $gend ]] && [[ $query == *"3" ]]
+then
+echo $query $GD $gstart $gend $qstart $qend >> IR3.orientare1.txt
 fi
 done
-done
 
-mv GA.txt 2IR.txt
-cat *.1IR.txt > 1IR.txt
-rm -r *.1IR.txt
+cat *.orientare1.txt > orientare1.txt
+cat *.orientare2.txt > orientare2.txt
+
+#Parcurg orientarea I.
+cat IR5.orientare1.txt | while read query5 GD5 gstart5 gend5 qstart5 qend5
+do 
+cat IR3.orientare1.txt | while read query3 GD3 gstart3 gend3 qstart3 qend3
+do 
+dif=$( expr $gend3 - $gstart5 )
+#Compar ca sa pot afla cazul in care sunt.
+if [[ ! $query5 == $query3 ]] && [[ $GD5 == $GD3 ]] && [[ $dif -le $TEextensie ]] && [[ $dif -gt 0 ]] 
+then 
+echo $query5 $GD5 $gstart5 $gend5 $qstart5 $qend5 >> 5.O1.2IR.txt
+echo $query3 $GD3 $gstart3 $gend3 $qstart3 $qend3 >> 3.O1.2IR.txt
+fi
+
+done 
+done
+cat *.O1.2IR.txt > IR5"'"+3"'".O1.txt
+rm -r *.2IR.txt
+
+comm -3 <(sort orientare1.txt) <(sort IR5"'"+3"'".O1.txt) > 1IR.O1.txt
+
+
+#Parcurg orientarea II.
+cat IR5.orientare2.txt | while read query5 GD5 gstart5 gend5 qstart5 qend5
+do 
+cat IR3.orientare2.txt | while read query3 GD3 gstart3 gend3 qstart3 qend3
+do 
+dif=$( expr $gstart5 - $gend3 )
+#Compar ca sa pot afla cazul in care sunt.
+if [[ ! $query5 == $query3 ]] && [[ $GD5 == $GD3 ]] && [[ $dif -le $TEextensie ]] && [[ $dif -gt 0 ]] 
+then 
+echo $query5 $GD5 $gstart5 $gend5 $qstart5 $qend5 >> 5.O2.2IR.txt
+echo $query3 $GD3 $gstart3 $gend3 $qstart3 $qend3 >> 3.O2.2IR.txt
+fi
+
+done 
+done
+cat *.O2.2IR.txt > IR5"'"+3"'".O2.txt
+rm -r *.2IR.txt
+
+comm -3 <(sort orientare2.txt) <(sort IR5"'"+3"'".O2.txt) > 1IR.O2.txt
+
+
+cat 1IR.O1.txt 1IR.O2.txt > 1IR.txt
+cat IR5"'"+3"'".O1.txt IR5"'"+3"'".O2.txt > 2IR.txt
+rm -r *1.txt *2.txt
 
 #Aleg daca extrag upstream sau downstream pt cele cu 2IR.
-cat 2IR.txt | while read IR2query IR2genomic IR2gstart IR2gend IR2qstart IR2qend
+cat 2IR.txt | while read IR2query IR2GD IR2gstart IR2gend IR2qstart IR2qend
 do
 if [[ $IR2query == *"5" ]]
 then
-echo $IR2genomic $IR2gstart $IR2gend $IR2qstart $IR2qend > $IR2genomic.$IR2gstart.2IR.UPSTREAM.txt
+echo $IR2GD $IR2gstart $IR2gend $IR2qstart $IR2qend > $IR2GD.$IR2gstart.2IR.UPSTREAM.txt
 elif [[ $IR2query == *"3" ]]
 then
-echo $IR2genomic $IR2gstart $IR2gend $IR2qstart $IR2qend > $IR2genomic.$IR2gstart.2IR.DOWNSTREAM.txt
+echo $IR2GD $IR2gstart $IR2gend $IR2qstart $IR2qend > $IR2GD.$IR2gstart.2IR.DOWNSTREAM.txt
 fi
 done
 
@@ -84,14 +136,14 @@ cd ..
 #########################################################################AI VERIFICAT PANA AICI. FUNCTIONEAZA.
 
 #PENTRU UN SINGUR IR EXTRAG UP SI DOWNSTREAM.
-cat 1IR.txt | while read IR1query IR1genomic IR1gstart IR1gend IR1qstart IR1qend
+cat 1IR.txt | while read IR1query IR1GD IR1gstart IR1gend IR1qstart IR1qend
 do
 if [[ $IR1query == *"5" ]]
 then
-echo $IR1genomic $IR1gstart $IR1gend $IR1qstart $IR1qend > $IR1genomic.$IR1gstart.1IR.UPSTREAM.txt
+echo $IR1GD $IR1gstart $IR1gend $IR1qstart $IR1qend > $IR1GD.$IR1gstart.1IR.UPSTREAM.txt
 elif [[ $IR1query == *"3" ]]
 then
-echo $IR1genomic $IR1gstart $IR1gend $IR1qstart $IR1qend > $IR1genomic.$IR1gstart.1IR.DOWNSTREAM.txt
+echo $IR1GD $IR1gstart $IR1gend $IR1qstart $IR1qend > $IR1GD.$IR1gstart.1IR.DOWNSTREAM.txt
 fi
 done
 
