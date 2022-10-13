@@ -3,7 +3,7 @@
 brew install gnu-sed
 brew install gawk
 
-echo "TE Reference length"
+echo "TE reference length"
 read Qlength
 
 echo "Length of a putative insertion/autoinsertion (in the TE sequence of interest) that may increase the TE sequence length compared to the TE reference length:"
@@ -22,23 +22,28 @@ do
 #Orientare II, 5'.
 if [[ $gstart -gt $gend ]] && [[ $query == *"5" ]]
 then
-echo $query $GD $gstart $gend $qstart $qend >> IR5.orientare2.txt
+echo $query $GD $gstart $gend $qstart $qend > $GD.$gstart.$gend.IR5.orientare2.txt
 #Orientare II, 3'.
 elif [[ $gstart -gt $gend ]] && [[ $query == *"3" ]]
 then
-echo $query $GD $gstart $gend $qstart $qend >> IR3.orientare2.txt
+echo $query $GD $gstart $gend $qstart $qend > $GD.$gstart.$gend.IR3.orientare2.txt
 
 #Orientare I, 5'.
 elif [[ $gstart -lt $gend ]] && [[ $query == *"5" ]]
 then
-echo $query $GD $gstart $gend $qstart $qend >> IR5.orientare1.txt
+echo $query $GD $gstart $gend $qstart $qend > $GD.$gstart.$gend.IR5.orientare1.txt
 #Orientare I, 3'.
 elif [[ $gstart -lt $gend ]] && [[ $query == *"3" ]]
 then
-echo $query $GD $gstart $gend $qstart $qend >> IR3.orientare1.txt
+echo $query $GD $gstart $gend $qstart $qend > $GD.$gstart.$gend.IR3.orientare1.txt
 fi
 done
 
+cat *.IR5.orientare2.txt > IR5.orientare2.txt
+cat *.IR3.orientare2.txt > IR3.orientare2.txt
+cat *.IR5.orientare1.txt > IR5.orientare1.txt
+cat *.IR3.orientare1.txt > IR3.orientare1.txt
+rm -r *.IR5.orientare2.txt *.IR3.orientare2.txt *.IR5.orientare1.txt *.IR3.orientare1.txt
 cat *.orientare1.txt > orientare1.txt
 cat *.orientare2.txt > orientare2.txt
 
