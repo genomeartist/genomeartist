@@ -624,7 +624,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 performIndividualSearch(searchQuery);                
             }
         }
-        if(tabbedpane.getTabCount() > 100)
+        if(tabbedpane.getTabCount() > 5)
             tabbedpane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         else
             tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
