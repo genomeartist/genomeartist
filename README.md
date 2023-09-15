@@ -9,7 +9,7 @@ To some extent, Genome ARTIST is an alternative for the classical alignment algo
 
 Genome ARTIST is the result of an interdisciplinary collaboration between researchers from the Department of Genetics, University of Bucharest, and computer engineers, graduates of "Politehnica" University of Bucharest, PUB. The authors of the software are Alexandru Al. Ecovoiu, Iulian Constantin Ghionoiu, Andrei Mihai Ciuca, Iulian Cristian Ghita and Attila Cristian Ratiu.
 
-Genome ARTIST pre-compiled versions are available and can be donwloaded at [https://genomeartist.ro/](https://genomeartist.ro/). 
+Genome ARTIST pre-compiled versions are available and can be downloaded at [https://genomeartist.ro/](https://genomeartist.ro/). 
 
 
 ## INSTRUCTIONS FOR COMPILATION Genome ARTIST_v2 LINUX
