@@ -35,7 +35,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
+import javax.swing.JFrame;
 /**
  *
  * @author iulian
@@ -122,8 +122,9 @@ public class JBestResultPane extends JPanel {
             String cmd = e.getActionCommand();
 
             if (ACTION_OPEN.equals(cmd)) {
-                Dialog dialog = new JFinalResultItemDialog(globalManager, localManager,
+                JFrame dialog = new JFinalResultItemDialog(globalManager, localManager,
                       "Best result", finalResultItem);
+                dialog.setTitle("Best result");
                 dialog.setVisible(true);
             }
         }

@@ -27,6 +27,10 @@ import ro.genomeartist.gui.utils.MyUtils;
 import java.io.File;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -61,6 +65,17 @@ public class AddSearchFolderCallable extends AbstractProgressCallable<Vector<Sea
         int step = 100/numberOfSeqFile;
         int infLimit = 0;
         int supLimit = step;
+        String noThreadsStr = System.getenv("NOTHREADS");
+
+        Integer noThreads = 10;
+        try {
+            noThreads=Integer.parseInt(noThreadsStr);
+        }
+        catch (Exception e) {
+            noThreads=10;
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(noThreads);
 
         Iterator<File> fileIterator = rawFiles.iterator();
         while (fileIterator.hasNext()) {
@@ -80,14 +95,31 @@ public class AddSearchFolderCallable extends AbstractProgressCallable<Vector<Sea
             AbstractProgressCallable runDataHashing =
                     ExternalLink.getAddSearchFileCallable(newSearchFile);
             runDataHashing.setProgressInfoManager(this);
-            runDataHashing.call();
+            //runDataHashing.call();
+            Future<Boolean> f = null;
+            try {
+                f = executor.submit(runDataHashing);
+            } catch (Exception e) {
+                // TODO: handle exception
+                System.out.print("Exception running executor for data hashing for file "+newSearchFile);
+                System.out.println((e.toString()));
+            }
+            
+
             infLimit = supLimit;
             supLimit += step;
 
             //Adaug fisierul la tabel
-            newSearchFiles.add(newSearchFile);
+            //if (Boolean.TRUE == f.get()) {
+                newSearchFiles.add(newSearchFile);
+            //}
         }
-
+        executor.shutdown();
+        try {
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+         System.out.println("Exception awaiting termination " +e.toString());
+        }
         //intorc vectorul
         return newSearchFiles;
     }

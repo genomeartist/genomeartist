@@ -35,15 +35,17 @@ import java.io.InputStreamReader;
 public class RunSearchCallable extends AbstractProgressCallable<Boolean> {
     SearchQuery searchQuery;
     File outputFile;
+    Integer shmMemoryId = 0;
 
     /**
      * Pregatesc argumetele
      * @param searchQuery
      * @param outputFile
      */
-    public RunSearchCallable(SearchQuery searchQuery, File outputFile) {
+    public RunSearchCallable(SearchQuery searchQuery, File outputFile, Integer ShmMemoryId) {
         this.searchQuery = searchQuery;
         this.outputFile = outputFile;
+        shmMemoryId = ShmMemoryId;
     }
 
     /**
@@ -53,16 +55,34 @@ public class RunSearchCallable extends AbstractProgressCallable<Boolean> {
      */
     public Boolean call() throws Exception {
        String outputFileName = outputFile.getPath();
-       String args[]= new String[5];
+       String args[]= new String[6];
        args[0] = ReadOnlyConfiguration.getString("clientFile");
        args[1] = searchQuery.getQueryContent();
        args[2] = ReadOnlyConfiguration.getString("EXPANSION_TABLE_FILE");
        args[3] = searchQuery.getQueryName();
        args[4] = outputFileName;
-
+       args[5] = shmMemoryId.toString();
+       System.out.println("shared memory index="+shmMemoryId.toString());
+       
        ProcessBuilder pbuild;
 
         pbuild = new ProcessBuilder(args);
+        String saveOutputToFile = System.getenv("FILEOUTPUT");
+
+        try {
+            Integer toSave=Integer.parseInt(saveOutputToFile);
+            if (toSave == 1)
+            {
+                String clientLogFileName = "client_log_"+shmMemoryId.toString()+".log";
+                File log = new File(clientLogFileName);
+               pbuild.redirectErrorStream(true);
+               pbuild.redirectOutput(log);
+               System.out.println("Am creat un nou proces client cu output directat in fisier");
+            }
+        }
+        catch (Exception e) {
+        }
+
         Process process = pbuild.start();
 
         //Setez variabila proces
@@ -72,25 +92,29 @@ public class RunSearchCallable extends AbstractProgressCallable<Boolean> {
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         String line;
-
+        System.out.println("start time"+java.time.LocalDateTime.now().toString());
         String stopWordClient = ReadOnlyConfiguration.getString("stopWordClient");
-
+        
         //Citesc fisierul tinand cont de taguri
         this.setProgressRange(0, 100);
         TaggedFileConsumerCallable taggedFileConsumer =
                 new TaggedFileConsumerCallable(br, stopWordClient);
         taggedFileConsumer.setProgressInfoManager(this);
         taggedFileConsumer.call();
-
+        
         //Am terminat resetez variabila process
         ExternalLink.setSearchProcess(null);
 
         //Wait for the end of process to be sure
         process.waitFor();
+        System.out.println("end time"+java.time.LocalDateTime.now().toString());
         int exitValue = process.exitValue();
         if (exitValue != 0)
-            throw new Exception("Search failed !");
-        
+        {
+            //throw new Exception("Search failed !");
+            System.out.println("Searching failed in the search process, check client log");
+            return Boolean.FALSE;
+        }
         return Boolean.TRUE;
     }
 }
