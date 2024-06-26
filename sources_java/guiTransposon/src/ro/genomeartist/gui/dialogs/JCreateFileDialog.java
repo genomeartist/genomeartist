@@ -27,6 +27,12 @@ import ro.genomeartist.gui.utils.MyUtils;
 import ro.genomeartist.gui.utils.StringUtils;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import javax.swing.*;
 
 /**
@@ -68,12 +74,15 @@ public class JCreateFileDialog extends JDialog {
     private JPanel bottomPane;
         private JButton buttonOk;
         private JButton buttonCancel;
+        private JButton buttonSelect;
 
     private static final String BUTTON_OK = "    Ok    ";
     private static final String BUTTON_CANCEL = "  Cancel  ";
+    private static final String BUTTON_SELECT = "  Select File  ";
     //Constante pentru actiuni
     private static final String ACTION_OK = "ok";
     private static final String ACTION_CANCEL = "apply";
+    private static final String ACTION_SELECT = "select";
 
     /**
      * Dialog de afisare partial result
@@ -122,6 +131,14 @@ public class JCreateFileDialog extends JDialog {
         bottomPane = new JPanel();
         bottomPane.setLayout(new BoxLayout(bottomPane, BoxLayout.X_AXIS));
         bottomPane.add(Box.createHorizontalGlue());
+
+
+        buttonSelect = new JButton(BUTTON_SELECT);
+            buttonSelect.setActionCommand(ACTION_SELECT);
+            buttonSelect.addActionListener(buttonListener);
+        bottomPane.add(buttonSelect);
+        bottomPane.add(Box.createHorizontalGlue());
+
             buttonOk = new JButton(BUTTON_OK);
             buttonOk.setActionCommand(ACTION_OK);
             buttonOk.addActionListener(buttonListener);
@@ -131,8 +148,8 @@ public class JCreateFileDialog extends JDialog {
             buttonCancel.addActionListener(buttonListener);
         bottomPane.add(buttonCancel);
         bottomPane.add(Box.createHorizontalGlue());
-        this.add(bottomPane,BorderLayout.SOUTH);
 
+        this.add(bottomPane,BorderLayout.SOUTH);
         this.pack();
 
         //Set it's location
@@ -177,7 +194,44 @@ public class JCreateFileDialog extends JDialog {
         isOk.setTrue();
         JCreateFileDialog.this.dispose();
     }
+    private void fireActionSelectFile() {
 
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setCurrentDirectory(new File("."));
+            int option = fileChooser.showOpenDialog(globalManager.getTheRootFrame());
+            if(option == JFileChooser.APPROVE_OPTION){
+               File file = fileChooser.getSelectedFile();
+               System.out.println("File Selected here: " + file.getName());
+               try{               
+                FileInputStream fis = new FileInputStream(file);
+                byte[] data = new byte[(int) file.length()];
+                fis.read(data);
+                fis.close();
+                String fileLenString = System.getenv("COPYLENGTH");
+
+                Integer fileLen = 30000;
+                try {
+                    if (fileLenString != ""){
+                        fileLen=Integer.parseInt(fileLenString);
+                    }
+                    if (fileLen > 30000){
+                        fileLen = 30000;
+                    }
+                }
+                catch (Exception e) {
+                    fileLen=30000;
+                }
+
+                    String str = new String(data,  0, fileLen, "UTF-8");
+                    textareaValueQuery.setText(str);
+               }
+               catch (Exception e)
+               {
+                System.out.println(e.toString());
+               }
+            }
+
+    }
     /**
      * Lansez actiunea de cancel
      */
@@ -211,6 +265,9 @@ public class JCreateFileDialog extends JDialog {
                 }  else
                 if (ACTION_CANCEL.equals(cmd)) {
                     fireActionCancel();
+                } else
+                if (ACTION_SELECT.equals(cmd)) {
+                    fireActionSelectFile();
                 }
             }
         };

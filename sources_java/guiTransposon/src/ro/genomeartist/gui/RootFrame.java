@@ -131,6 +131,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String NAME_SETTINGS = "Settings";
     private final static String NAME_EXPORT = "Export Data to File";
     private final static String NAME_THEME = "Dark Theme";
+    private final static String NAME_REMOVE_ALL_QUERIES = "Remove All Queries";
     private final static String NAME_EXIT = "Exit";
 
     private final static String ACTION_SEARCH = NAME_SEARCH.toLowerCase();
@@ -140,6 +141,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
     private final static String ACTION_SETTINGS = NAME_SETTINGS.toLowerCase();
     private final static String ACTION_EXPORT = NAME_EXPORT.toLowerCase();
     private final static String ACTION_THEME = NAME_THEME.toLowerCase();
+    private final static String ACTION_REMOVE = NAME_REMOVE_ALL_QUERIES.toLowerCase();
     private final static String ACTION_EXIT = NAME_EXIT.toLowerCase();
 
     //~~~~~~~~~Obiecte proprii~~~~/
@@ -336,7 +338,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
      */
     public void pornesteInitializare() {
         //Fac actiunea in background cu panou de monitorizare
-        AbstractProgressCallable startServerCallable = ExternalLink.getStartServerCallable();
+        AbstractProgressCallable<Boolean> startServerCallable = ExternalLink.getStartServerCallable();
         JProgressSwingWorker startServerWorker =
                 new JProgressSwingWorker(this,
                 "Loading genomes",startServerCallable,JProgressPanel.INDETERMINATE);
@@ -441,6 +443,12 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             item.setActionCommand(ACTION_THEME);
         menu1.add(item);
 
+        item= new JMenuItem(NAME_REMOVE_ALL_QUERIES);
+            item.addActionListener(menuListener);
+            item.setActionCommand(ACTION_REMOVE);
+        menu1.add(item);
+
+
         menu1.addSeparator();
 
         //Adaug un element la meniu
@@ -536,6 +544,14 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             checkbox.setFocusable(false);
         localToolBar.add(checkbox); 
 
+        button = new JButton(NAME_REMOVE_ALL_QUERIES);
+            button.setActionCommand(ACTION_REMOVE);
+            button.addActionListener(menuListener);
+            button.setToolTipText("Remove all queries");
+            //button.setIcon(iconProvider.getIcon(JToolbarFereastraIcons.GLOBAL_NAME));
+            button.setFocusable(false);
+        localToolBar.add(button);
+
         //Adaug sigla la sfarsit
         JBrandingImages brandingImages = (JBrandingImages) MyGlobalClasses
                 .get(JBrandingImages.GLOBAL_NAME);
@@ -563,7 +579,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         //Creez tabbed pane-ul
         tabbedpane = createTabbedPane();
         //tabbedpane.add("Center",new JMiddlePane(this, TestData.getTestMainResult()));
-
+        tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
         panel.add(tabbedpane);
 
         return panel;
@@ -617,17 +633,22 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         JMyBoolean isOk = new JMyBoolean();
         final JSearchQueryDialog searchDialog = new JSearchQueryDialog(
                 RootFrame.this, "New Search", true, isOk);
+        //this.setFocusable(false);
+        //this.setFocusableWindowState(false);
         searchDialog.setVisible(true);
 
+
+ 
         if(isOk.isTrue()) {
             for (SearchQuery searchQuery : searchDialog.getSearchQueries()) {
                 performIndividualSearch(searchQuery);                
             }
         }
+ 
         if(tabbedpane.getTabCount() > 5)
             tabbedpane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        else
-            tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+        /*else
+            tabbedpane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);*/
     }
 
     /**
@@ -635,6 +656,7 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
      */
     public void fireActionLoad() {        
         fc.setMultiSelectionEnabled(true);
+        fc.setCurrentDirectory(new File("."));
         int returnVal = fc.showOpenDialog(RootFrame.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             final File[] files = fc.getSelectedFiles();
@@ -821,6 +843,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         SwingUtilities.updateComponentTreeUI(RootFrame.this);
     }
     
+        public void fireActionRemoveAllQueries() {
+            tabbedpane.removeAll();
+    }
     /**
      * Lansez actiunea de deschidere panou de setari
      */
@@ -850,12 +875,13 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
         outputPath += searchQuery.getQueryName() + "_" + 
                 MyUtils.getCurrentUTCTimestampInISO8601Format() + ".ga";
         File outputFile = new File(outputPath);
+        
         //Fac actiunea in background cu panou de monitorizare
         AbstractProgressCallable callable = ExternalLink.getSearchCallable(searchQuery, outputFile);
         JProgressSwingWorker<Boolean> searchWorker =
                 new JProgressSwingWorker<Boolean>(this.getTheRootFrame(),
-                "Computing",callable,JProgressPanel.DETERMINATE);
-        searchWorker.setStandardErrorMessage("Error while searching");
+                "Computing 3",callable,JProgressPanel.DETERMINATE);
+        searchWorker.setStandardErrorMessage("Error while searching 1");
         //Fac taskul
         Boolean hasSucceded = searchWorker.executeTask();
         //Obtin rezultatul
@@ -866,11 +892,14 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
             mainResult.hasBeenModified = true;
             
             //Afisez tabul cu rezultatul
+            
             JPanel resultPane = new JSearchResultPaneManager(RootFrame.this,
                     mainResult);
+
             tabbedpane.add(mainResult.infoQuery.queryName,
                     resultPane);
             tabbedpane.setSelectedComponent(resultPane);
+            
         }
     }
     
@@ -1036,6 +1065,9 @@ public class RootFrame extends JFrame implements IDoScreenshot,IGlobalManager {
                 } else
                 if (ACTION_THEME.equals(cmd)) {
                     fireActionChangeTheme();
+                } else
+                if (ACTION_REMOVE.equals(cmd)) {
+                    fireActionRemoveAllQueries();
                 } else
                 if (ACTION_EXIT.equals(cmd)) {
                     fireActionExit();

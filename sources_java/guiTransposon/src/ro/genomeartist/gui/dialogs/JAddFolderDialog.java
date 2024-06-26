@@ -25,6 +25,10 @@ import ro.genomeartist.gui.utils.MyUtils;
 import ro.genomeartist.gui.utils.StringUtils;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+
 import javax.swing.*;
 
 /**
@@ -35,6 +39,7 @@ public class JAddFolderDialog extends JDialog {
     private IGlobalManager globalManager;
     private SearchFolder searchFolderRaw;
     private JMyBoolean isOk;
+    private boolean isFolder;
 
     //Constante pentru titluri
     private static final String TITLE_FILE = "File information";
@@ -57,6 +62,8 @@ public class JAddFolderDialog extends JDialog {
     private static final String ACTION_FOLDER = "seq_file";
     private static final String ACTION_OK = "ok";
     private static final String ACTION_CANCEL = "apply";
+    //Constante pentru actiuni
+    private static final String ACTION_FILES = "seq_files";
 
     private JPanel middlePane;
         //Panoul cu date despre aliniere
@@ -80,13 +87,14 @@ public class JAddFolderDialog extends JDialog {
      * Dialog de eroare
      */
     public JAddFolderDialog(IGlobalManager globalManager, String title, boolean modal,
-             JMyBoolean isOk)  {
+             JMyBoolean isOk, boolean isFolder)  {
         super(globalManager.getTheRootFrame(), title, modal);
         setSize(FRAME_WIDTH,FRAME_HEIGHT);
 
         this.globalManager = globalManager;
         this.searchFolderRaw = new SearchFolder();
         this.isOk = isOk;
+        this.isFolder = isFolder;
 
         //File choserul
         fc = new JFileChooser();
@@ -142,7 +150,12 @@ public class JAddFolderDialog extends JDialog {
             folderPanel = createAlignedPane(labelTextFolder, textfieldFolder, false);
                 buttonFolderFile = new JButton();
                 buttonFolderFile.setText(BUTTON_FOLDER);
-                buttonFolderFile.setActionCommand(ACTION_FOLDER);
+                if (isFolder) {
+                    buttonFolderFile.setActionCommand(ACTION_FOLDER);
+                }
+                else {
+                    buttonFolderFile.setActionCommand(ACTION_FILES);
+                }
                 buttonFolderFile.addActionListener(buttonListener);
             folderPanel.add(buttonFolderFile);
          localPane.add(folderPanel);
@@ -214,9 +227,23 @@ public class JAddFolderDialog extends JDialog {
                 String auxString;
 
                 if (ACTION_FOLDER.equals(cmd)) {
+                    fc.setCurrentDirectory(new File("."));
+                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int returnVal = fc.showOpenDialog(globalManager.getTheRootFrame());
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         searchFolderRaw.folderLocation = fc.getSelectedFile();
+                        updatePanelFromRaw();
+                    }
+                }  else
+                if (ACTION_FILES.equals(cmd)) {
+                    fc.setCurrentDirectory(new File("."));
+                    fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                    fc.setMultiSelectionEnabled(true);
+                    int returnVal = fc.showOpenDialog(globalManager.getTheRootFrame());
+
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        searchFolderRaw.selectedFiles = fc.getSelectedFiles();
+                        searchFolderRaw.folderLocation = fc.getCurrentDirectory();
                         updatePanelFromRaw();
                     }
                 }  else

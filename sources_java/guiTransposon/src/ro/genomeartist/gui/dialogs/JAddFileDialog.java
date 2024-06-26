@@ -25,6 +25,8 @@ import ro.genomeartist.gui.utils.MyUtils;
 import ro.genomeartist.gui.utils.StringUtils;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import javax.swing.*;
 
 /**
@@ -236,6 +238,7 @@ public class JAddFileDialog extends JDialog {
                 String auxString;
 
                 if (ACTION_SEQ.equals(cmd)) {
+                    fc.setCurrentDirectory(new File("."));
                     int returnVal = fc.showOpenDialog(globalManager.getTheRootFrame());
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         searchFileRaw.rawLocation = fc.getSelectedFile();
@@ -243,6 +246,7 @@ public class JAddFileDialog extends JDialog {
                     }
                 }  else
                 if (ACTION_GENE.equals(cmd)) {
+                    fc.setCurrentDirectory(new File("."));
                     int returnVal = fc.showOpenDialog(globalManager.getTheRootFrame());
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         searchFileRaw.geneLocation = fc.getSelectedFile();

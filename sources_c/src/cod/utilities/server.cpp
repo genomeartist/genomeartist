@@ -116,11 +116,11 @@ void release(long long marime_totala, long long marime_totala_acc)
 	#endif
 }
 
-void delincheaza()
+void delincheaza(char * nume_memorie)
 {
 	#ifdef _WIN32
 	#else
-		shm_unlink(NUME_MEMORIE_PARTAJATA);
+		shm_unlink(nume_memorie);
 		shm_unlink(NUME_MEMORIE_PARTAJATA_POZITIONARE);
 	#endif
 }
@@ -227,9 +227,8 @@ int main(int argc,char *args[])
 
 	unsigned long tempSize = 0;
 
-	delincheaza();
 
-	if (argc != 2)
+	if (argc != 3)
 	{
 		fprintf(stderr,"@error:Nu s-au dat parametrii necesari !\n");
 		return -1;
@@ -280,8 +279,14 @@ int main(int argc,char *args[])
 	//calculez marimea totala necesara pentru memoria partajata
 	marime_totala = sizeof(unsigned long) + numar_fisiere * MARIME_STRUCTURA + marime_date;
 	marime_totala_acc = sizeof(unsigned long) + MARIME_STRUCTURA_ACC * nr_inregistrari_acc_total;
-
-	mem = obtine_memorie(NUME_MEMORIE_PARTAJATA, marime_totala, 0);
+	printf("1");
+	char * nume_memorie = new char(sizeof(NUME_MEMORIE_PARTAJATA)+sizeof(args[2]));
+	memset(nume_memorie, 0, sizeof(NUME_MEMORIE_PARTAJATA)+sizeof(args[2]));
+	printf("2");
+	sprintf(nume_memorie,"%s_%s",NUME_MEMORIE_PARTAJATA,args[2]);
+	printf("SERVER: NUME_MEMORIE_PARTAJATA este %s", nume_memorie);
+		delincheaza(nume_memorie);
+	mem = obtine_memorie(nume_memorie, marime_totala, 0);
 	mem_acc = obtine_memorie(NUME_MEMORIE_PARTAJATA_POZITIONARE, marime_totala_acc, 1);
 #ifdef _WIN32
 	SharedMemoryKeepAliveService::Start();
@@ -447,7 +452,7 @@ int main(int argc,char *args[])
 	fclose(fisier_intrare);
 
 	//DEBUG ONLY
-	//test_continut();
+	test_continut();
 
 	printf("serverok\n");
 	#ifdef _WIN32

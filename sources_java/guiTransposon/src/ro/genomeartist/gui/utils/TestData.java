@@ -227,7 +227,8 @@ public class TestData {
 
         //Creez un set de rezultate partiale
         for (int i = 0; i < n; i++) {
-            finalResultSet.add(getTestFinalResultItem());
+            FinalResultItem finalResultItem = getTestFinalResultItem();
+            finalResultSet.add(finalResultItem);
         }
 
         return finalResultSet;
