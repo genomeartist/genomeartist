@@ -94,7 +94,6 @@ public class JFileChooserPropertiesEditor extends JPanel
         this.selectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //Obtin fisierul indicat
-                fileChooser.setCurrentDirectory(new File("."));
                 int returnVal = fileChooser.showOpenDialog(JFileChooserPropertiesEditor.this.rootFrame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();

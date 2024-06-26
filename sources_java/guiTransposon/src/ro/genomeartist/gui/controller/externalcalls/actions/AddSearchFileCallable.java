@@ -78,20 +78,11 @@ public class AddSearchFileCallable extends AbstractProgressCallable<Boolean> {
 
         File newGene = new File(pathGene);
         //Daca nu se specifica gene, le setez pe 0
-        try{
-            if (searchFile.geneLocation != null) {
-                searchFile.geneNumber = ExternalLink.fastaToGeneFile(searchFile.geneLocation,newGene);
-            } else {
-                ExternalLink.createEmptyFile(newGene);
-                searchFile.geneNumber = 0;
-            }
-        }
-        catch (Exception e)
-        {
-                ExternalLink.createEmptyFile(newGene);
-                searchFile.geneNumber = 0;    
-                throw(e);  
-                
+        if (searchFile.geneLocation != null) {
+            searchFile.geneNumber = ExternalLink.fastaToGeneFile(searchFile.geneLocation,newGene);
+        } else {
+            ExternalLink.createEmptyFile(newGene);
+            searchFile.geneNumber = 0;
         }
         searchFile.geneLocation = newGene;
         this.setProgressValue(100); // of (95,100)

@@ -24,7 +24,6 @@ import ro.genomeartist.gui.controller.externalcalls.actions.RunDataHashingUtilit
 import ro.genomeartist.components.swingworkers.progressworker.AbstractProgressCallable;
 import ro.genomeartist.gui.controller.externalcalls.actions.AddSearchFileCallable;
 import ro.genomeartist.gui.controller.externalcalls.actions.AddSearchFolderCallable;
-import ro.genomeartist.gui.controller.externalcalls.actions.AddSearchFilesCallable;
 import ro.genomeartist.gui.controller.externalcalls.actions.CreateSearchFileCallable;
 import ro.genomeartist.gui.controller.externalcalls.actions.DeleteMultipleFilesCallable;
 import ro.genomeartist.gui.controller.externalcalls.actions.DeleteSearchFileCallable;
@@ -61,7 +60,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.Random;
 
 /**
  * Clasa ce contine metodele de a executa functii din exterior
@@ -86,8 +84,6 @@ public class ExternalLink {
     private static Process serverProcess = null;
     private static Process searchProcess = null;
 
-    private static Integer shmMemoryId = (new Random().nextInt(100));
-
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *    Operatiuni server
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -97,7 +93,7 @@ public class ExternalLink {
      * @return
      */
     public static AbstractProgressCallable<Boolean> getStartServerCallable() {
-        return new StartServerCallable(shmMemoryId);
+        return new StartServerCallable();
     }
     
     /**
@@ -109,11 +105,9 @@ public class ExternalLink {
        if (serverProcess != null) serverProcess.destroy();
         
        //Rulez cleanerul
-       String args[]= new String[2];
+       String args[]= new String[1];
        args[0] = ReadOnlyConfiguration.getString("cleanerFile");
-       args[1] = shmMemoryId.toString();
 
-       System.out.println(args);
        ProcessBuilder pbuild;
 
         try {
@@ -156,7 +150,7 @@ public class ExternalLink {
      */
     public static AbstractProgressCallable<Boolean> getSearchCallable(
             SearchQuery searchQuery, File outputFile) {
-        return new RunSearchCallable(searchQuery, outputFile, shmMemoryId);
+        return new RunSearchCallable(searchQuery, outputFile);
     }
 
     /**
@@ -246,14 +240,7 @@ public class ExternalLink {
             getAddSearchFolderCallable(SearchFolder searchFolderRaw, boolean isTransposon) {
         return new AddSearchFolderCallable(searchFolderRaw, isTransposon);
     }
-    /**
-     * Adaug fisierul in intrarile curente
-     * @param searchFiles
-     */
-    public static AbstractProgressCallable<Vector<SearchFile>>
-            getAddSearchFilesCallable(SearchFolder searchFolderRaw, boolean isTransposon) {
-        return new AddSearchFilesCallable(searchFolderRaw, isTransposon);
-    }
+
     /**
      * Sterge intrarile asociate acestui fisier
      * @param searchFile

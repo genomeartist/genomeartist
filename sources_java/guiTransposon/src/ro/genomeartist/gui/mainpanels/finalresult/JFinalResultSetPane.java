@@ -121,13 +121,8 @@ public class JFinalResultSetPane extends JPanel {
         column.setHeaderRenderer(multirenderer);
         column.setPreferredWidth(COL_MAX_WIDTH);
         column.setMaxWidth(COL_MAX_WIDTH);
-        
-        column = columns.getColumn(1);
-        column.setHeaderRenderer(multirenderer);
-        column.setPreferredWidth(COL_MAX_WIDTH);
-        column.setMaxWidth(COL_MAX_WIDTH);
         //Descriere
-        column = columns.getColumn(2);
+        column = columns.getColumn(1);
         column.setHeaderRenderer(multirenderer);
         column.setPreferredWidth(400);
     }
@@ -161,10 +156,9 @@ public class JFinalResultSetPane extends JPanel {
           if (e.getClickCount() == 2){
               int row = tableFinalResults.rowAtPoint(e.getPoint());
               FinalResultItem selectedItem = finalResultSet.elementAt(row);
-              int index = finalResultSet.indexOf(selectedItem) +1;
-              JFrame dialog = new JFinalResultItemDialog(globalManager, localManager,
-                      "Result candidate: score "+ selectedItem.getScore(), selectedItem);
-              dialog.setTitle("Result candidate: score "+ selectedItem.getScore()+ " no. " + index );
+
+              Dialog dialog = new JFinalResultItemDialog(globalManager, localManager,
+                      "Result candidate", selectedItem);
               dialog.setVisible(true);
 
              }
@@ -186,7 +180,7 @@ public class JFinalResultSetPane extends JPanel {
          * @return numarul de coloane
          */
         public int getColumnCount() {
-            return 3;
+            return 2;
         }
 
         /**
@@ -206,10 +200,8 @@ public class JFinalResultSetPane extends JPanel {
         public String getColumnName(int column) {
             switch (column) {
             case 0:
-                return "No.";
-            case 1:
                 return "Score";
-            case 2:
+            case 1:
                 return "Sequence\nMapping";
             default:
                 assert false;
@@ -233,10 +225,8 @@ public class JFinalResultSetPane extends JPanel {
 
             switch (col) {
             case 0:
-                return new BoldInteger(finalResultSet.indexOf(finalResultItem) +1);
-            case 1:
                 return new BoldInteger(finalResultItem.getScore());
-            case 2:
+            case 1:
                 return finalResultItem;
             default:
                 assert false;
@@ -256,8 +246,6 @@ public class JFinalResultSetPane extends JPanel {
             case 0:
                 return BoldInteger.class;
             case 1:
-                return BoldInteger.class;
-            case 2:
                 return FinalResultItem.class;
             default:
                 assert false;
