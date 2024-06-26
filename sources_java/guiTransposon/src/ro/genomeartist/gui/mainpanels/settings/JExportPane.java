@@ -212,6 +212,7 @@ public class JExportPane extends JPanel {
     public void fireActionLoadCoordinates() {
         coordinateList = new ArrayList<String>();
         JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File("."));
         int result = fc.showOpenDialog(this);
         coordinateList.clear();
         if(result == JFileChooser.APPROVE_OPTION) {

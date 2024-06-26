@@ -297,7 +297,7 @@ public class JSearchQueryDialog extends JTwoButtonAbstractDialog {
             fc.setAcceptAllFileFilterUsed(false);
             
             StringBuilder builder = new StringBuilder();
-            
+            fc.setCurrentDirectory(new File("."));
             int returnVal = fc.showOpenDialog(getParent());
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 final File[] files = fc.getSelectedFiles();
