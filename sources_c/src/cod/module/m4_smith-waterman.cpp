@@ -50,10 +50,10 @@ struct ALINIERE* sw_align(char* str1,int offset1, int length1, char* str2, int o
     struct ALINIERE* result = (struct ALINIERE*) malloc(sizeof(struct ALINIERE));
 
 	      //Afisez de test
-	      //printf("offset1: %d, length1: %d, string1 :",offset1,length1);
-	      //print_string(str1,length1);
-	      //printf("offset2: %d, length2: %d, string2 :",offset2,length2);
-	      //print_string(str2,length2);
+	      printf("offset1: %d, length1: %d, string1 :",offset1,length1);
+	      print_string(str1,length1);
+	      printf("offset2: %d, length2: %d, string2 :",offset2,length2);
+	      print_string(str2,length2);
     
     //Aloc matricea continuu
     matrix[0]=&vector[0];
@@ -262,8 +262,8 @@ struct ALINIERE* sw_align(char* str1,int offset1, int length1, char* str2, int o
 	  }
     } while (item !=0 );
 
-    //printf("row=%d,col=%d",global_row,global_col);
-    //printf("nucl_start=%d,nucl_query=%d\n",nucl_start,nucl_query);
+    printf("row=%d,col=%d",global_row,global_col);
+    printf("nucl_start=%d,nucl_query=%d\n",nucl_start,nucl_query);
 
     //finalizez structura
     result->pozitieQuery = offset1 + i;

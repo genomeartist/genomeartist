@@ -23,6 +23,7 @@ import ro.genomeartist.components.swingworkers.progressworker.AbstractProgressCa
 import ro.genomeartist.gui.controller.externalcalls.ExternalLink;
 import ro.genomeartist.gui.utils.ReadOnlyConfiguration;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -32,12 +33,15 @@ import java.io.InputStreamReader;
  */
 public class StartServerCallable extends AbstractProgressCallable<Boolean> {
 
+    Process process = null;
+    Integer shmMemoryId = 0;
     /**
      * Pregatesc argumetele
      * @param searchQuery
      * @param outputFile
      */
-    public StartServerCallable() {
+    public StartServerCallable(Integer ShmMemoryId) {
+        shmMemoryId = ShmMemoryId;
     }
 
     /**
@@ -46,14 +50,32 @@ public class StartServerCallable extends AbstractProgressCallable<Boolean> {
      * @throws Exception
      */
     public Boolean call() throws Exception {
-       String args[]= new String[2];
-       args[0] = ReadOnlyConfiguration.getString("serverFile");
-       args[1] = ReadOnlyConfiguration.getString("PARAM_FISIERE");
+        if (process == null){
+            String args[]= new String[3];
+            args[0] = ReadOnlyConfiguration.getString("serverFile");
+            args[1] = ReadOnlyConfiguration.getString("PARAM_FISIERE");
+            args[2] = shmMemoryId.toString();
+            
+            ProcessBuilder pbuild;
+                pbuild = new ProcessBuilder(args);
 
-       ProcessBuilder pbuild;
-        pbuild = new ProcessBuilder(args);
-        Process process = pbuild.start();
+                String saveOutputToFile = System.getenv("FILEOUTPUT");
 
+                try {
+                    Integer toSave=Integer.parseInt(saveOutputToFile);
+                    if (toSave == 1)
+                    {
+                        String serverLogFileName = "server_log_"+shmMemoryId.toString()+".log";
+                        File log = new File(serverLogFileName);
+                       pbuild.redirectErrorStream(true);
+                       pbuild.redirectOutput(log);
+                       System.out.println("Am creat un nou proces server cu output directat in fisier");
+                    }
+                }
+                catch (Exception e) {
+                }
+                process = pbuild.start();
+        }
         //Setez variabila proces
         ExternalLink.setServerProcess(process);
         

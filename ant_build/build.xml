@@ -9,7 +9,7 @@
 
     <property name="gARTIST.jar" value="genomeARTIST.jar"/>
     <property name="main.classname" value="ro.genomeartist.gui.Main"/>
-    
+
     <!-- ~~~~~~~~ Java names~~~~~~~~~~~~ -->
     <property name="sources_java.dir" value="../sources_java"/>
     <property name="components.dir" value="${sources_java.dir}/Components"/>
@@ -45,10 +45,16 @@
     <property name="server.expansion" value="run_expansion_generation"/>
     <property name="server.server" value="server"/>
 
+    <!-- ~~~~~~~~Python names~~~~~~~~~~~~ -->
+    <property name="python.dir" value="../sources_python/"/>
+    <property name="python.script" value="GenomeARTIST.py"/>
+    <property name="python.artist36b" value="artist36b.png"/>
+    <property name="python.splash" value="splash.png"/>
+
     <!-- ~~~~~~~~Resources names~~~~~~~~~~~~ -->
     <property name="resources.dir.name" value="resources"/>
     <property name="resources.dir" value="../${resources.dir.name}"/>
-    
+
     <!-- ~~~~~~~~Scripts names~~~~~~~~~~~~ -->
     <property name="scripts.dir.name" value="scripts"/>
     <property name="scripts.dir" value="../${scripts.dir.name}"/>
@@ -123,6 +129,9 @@
         <copy file="${script.file}" todir="${release.dir}"/>
         <copy file="${script.cache.clean}" todir="${release.dir}"/>
         <copy file="${script.cache.load}" todir="${release.dir}"/>
+        <copy file="${python.dir}/${python.script}" todir="${release.dir}"/>
+        <copy file="${python.dir}/${python.artist36b}" todir="${release.dir}"/>
+        <copy file="${python.dir}/${python.splash}" todir="${release.dir}"/>
         <chmod file="${release.dir}/${server.cleaner}" perm="ugo+x"/>
         <chmod file="${release.dir}/${server.client}" perm="ugo+x"/>
         <chmod file="${release.dir}/${server.datahash}" perm="ugo+x"/>
@@ -131,6 +140,7 @@
         <chmod file="${release.dir}/${script.file}" perm="ugo+x"/>
         <chmod file="${release.dir}/${script.cache.clean}" perm="ugo+x"/>
         <chmod file="${release.dir}/${script.cache.load}" perm="ugo+x"/>
+        <chmod file="${release.dir}/${python.script}" perm="ugo+x"/>
         <!-- Copy the scripts -->
         <mkdir dir="${release.dir}/${scripts.dir.name}"/>
         <copy todir="${release.dir}/${scripts.dir.name}">
@@ -151,7 +161,7 @@
         </copy>
         <javac srcdir="${release.dir}/report/src"
             destdir="${release.dir}/report/classes" classpathref="classpath"/>
-        <jar destfile="${release.dir}/report/${gui.report.jar}" 
+        <jar destfile="${release.dir}/report/${gui.report.jar}"
             basedir="${release.dir}/report/classes">
             <manifest>
                 <attribute name="Main-Class" value="${gui.report.main}"/>
@@ -208,13 +218,13 @@
         <copy todir="${genomeless.dir}">
             <fileset dir="${release.dir}" excludes="**/${resources.dir.name}/raw/*,**/${resources.dir.name}/gene/*"/>
         </copy>
-	
+
 	 <!--   Make sure we have raw and gene  -->
 	<delete dir="${genomeless.dir}/${resources.dir.name}/raw"/>
 	<mkdir dir="${genomeless.dir}/${resources.dir.name}/raw"/>
 	<delete dir="${genomeless.dir}/${resources.dir.name}/gene"/>
 	<mkdir dir="${genomeless.dir}/${resources.dir.name}/gene"/>
-	
+
 	<!--   Set the flags and config file  -->
         <echo file="${genomeless.index.file}" message="#No genomes"/>
         <chmod file="${genomeless.dir}/${server.cleaner}" perm="ugo+x"/>
