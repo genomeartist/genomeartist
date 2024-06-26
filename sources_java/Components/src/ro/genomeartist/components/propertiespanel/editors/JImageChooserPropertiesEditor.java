@@ -123,7 +123,6 @@ public class JImageChooserPropertiesEditor extends JPanel
      */
     public void actionPerformed(ActionEvent e) {
         //Obtin fisierul indicat
-        fileChooser.setCurrentDirectory(new File("."));
         int returnVal = fileChooser.showOpenDialog(JImageChooserPropertiesEditor.this.rootFrame);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();

@@ -41,7 +41,7 @@ import javax.swing.*;
  *  Dialogul wrapper peste panoul cu afisearea unui Partial Result
  * @author iulian
  */
-public class JFinalResultItemDialog extends JFrame implements IDoScreenshot {
+public class JFinalResultItemDialog extends JDialog implements IDoScreenshot {
     //Constante pentru dimensiuni
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
@@ -90,8 +90,7 @@ public class JFinalResultItemDialog extends JFrame implements IDoScreenshot {
      */
     public JFinalResultItemDialog(IGlobalManager globalManager, ILocalManager localManager,
             String title, FinalResultItem finalResultItem )  {
-        //super(globalManager.getTheRootFrame(), title, false);
-        super();
+        super(globalManager.getTheRootFrame(), title, false);
         setSize(FRAME_WIDTH,FRAME_HEIGHT);
 
         //Initialize the dialog

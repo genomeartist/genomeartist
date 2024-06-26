@@ -116,10 +116,10 @@ char* my_strrev(char *s)
 /**
  * Link with the shared memory
  */
-void link_memory(const char *nume_zona_memorie)
+void link_memory()
 {
 #ifdef _WIN32
-	mem_h = OpenFileMapping(FILE_MAP_READ,false, nume_zona_memorie);
+	mem_h = OpenFileMapping(FILE_MAP_READ,false, NUME_MEMORIE_PARTAJATA);
 	if (mem_h == NULL)
 	{
 		fprintf(stderr, "Eroare la accesarea memoriei partajate\n");
@@ -138,7 +138,7 @@ void link_memory(const char *nume_zona_memorie)
 	int  rc;
 
 	//Obtain the file descriptor
-	if ((mem_h = shm_open(nume_zona_memorie, O_RDONLY, 0666)) == -1)
+	if ((mem_h = shm_open(NUME_MEMORIE_PARTAJATA, O_RDONLY, 0666)) == -1)
 	{
 		perror("client : ");
 		fprintf(stderr, "Eroare la deschiderea FileMapping\n");
@@ -397,14 +397,14 @@ VECTOR_ALINIERE* searchFile(int hashDescriptor,					//Descripturul fisierului cu
 	// Va rezulta un vector de intervale aliniate. (VECTOR6)
 	//NOTE Etapa 6 Prelucrez cu smith-waterman
 	valiniere = valiniere_initialize(vpicked->size);
-		lista_expanded = *(vpicked->elements);
+	lista_expanded = *(vpicked->elements);
 	contor = 0;
 	while (lista_expanded != NULL)
 	{
 		expanded_result = lista_expanded->data;
 		valiniere->elements[contor] = sw_align(expanded_result->str1,expanded_result->offset1,expanded_result->length1, 
 					    expanded_result->str2,expanded_result->offset2,expanded_result->length2);
-								lista_expanded = lista_expanded->next;
+		lista_expanded = lista_expanded->next;
 		contor++;
 	}
 	
@@ -438,9 +438,9 @@ int main(int argc,char *argv[])
 	int query_size;			//Dimensiunea query-ului
 	struct EXP_RESULT_MATRIX* expansion_table; //Expansion table-ul pentru extindere
 
-	if (argc < 6)
+	if (argc < 5)
 	{
-		fprintf(stderr,"Sintaxa este ./client expresie locatie_expansion query_name fisier_iesire random_int\n");
+		fprintf(stderr,"Sintaxa este ./client expresie locatie_expansion query_name fisier_iesire\n");
 		exit(-1);
 	}
 
@@ -457,14 +457,9 @@ int main(int argc,char *argv[])
 		return -1;
 	}
 
-	char * nume_memorie = new char(sizeof(NUME_MEMORIE_PARTAJATA)+sizeof(argv[5]));
-	memset(nume_memorie, 0, sizeof(NUME_MEMORIE_PARTAJATA)+sizeof(argv[5]));
-
-	sprintf(nume_memorie,"%s_%s",NUME_MEMORIE_PARTAJATA,argv[5]);
-	printf("CLIENT: NUME_MEMORIE_PARTAJATA este %s", nume_memorie);
 
 	//Link with the shared memory
-	link_memory(nume_memorie);
+	link_memory();
 	link_ext_memory();
 
 	//Compute the search patterns

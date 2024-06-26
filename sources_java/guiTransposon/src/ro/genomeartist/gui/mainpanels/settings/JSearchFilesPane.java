@@ -75,7 +75,6 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
 
     //Constante pentru butoane
     private static final String ACTION_ADD_FOLDER = "add_folder";
-    private static final String ACTION_ADD_FILES = "add_files";
     private static final String ACTION_ADD_FILE = "add_node";
     private static final String ACTION_DELETE = "del_node";
     private static final String ACTION_CREATE = "create_node";
@@ -83,7 +82,6 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
     //Butoanele din meniu
     JToolBar toolBar;
         JButton buttonAddFolder;
-        JButton buttonAddFiles;
         JButton buttonAddFile;
         JButton buttonDelete;
         JButton buttonCreate;
@@ -162,14 +160,6 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
         buttonAddFolder.setFocusable(false);
         localToolBar.add(buttonAddFolder);
 
-        buttonAddFiles = new JButton("Add files from folder");
-        buttonAddFiles.setActionCommand(ACTION_ADD_FILES);
-        buttonAddFiles.setToolTipText("Add selected files from a folder");
-        buttonAddFiles.addActionListener(this);
-        buttonAddFiles.setIcon(iconToolbarProvider.getIcon(JToolbarFisiereIcons.ADD_FILE));
-        buttonAddFiles.setFocusable(false);
-        localToolBar.add(buttonAddFiles);
-
         buttonAddFile = new JButton("Add file");
         buttonAddFile.setActionCommand(ACTION_ADD_FILE);
         buttonAddFile.setToolTipText("Add a new file");
@@ -188,13 +178,13 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
 
         localToolBar.addSeparator();
 
-        buttonCreate = new JButton("Create file");
-        buttonCreate.setActionCommand(ACTION_CREATE);
-        buttonCreate.setToolTipText("Create a new file");
-        buttonCreate.addActionListener(this);
-        buttonCreate.setIcon(iconToolbarProvider.getIcon(JToolbarFisiereIcons.NEW));
-        buttonCreate.setFocusable(false);
-        localToolBar.add(buttonCreate);
+        buttonDelete = new JButton("Create file");
+        buttonDelete.setActionCommand(ACTION_CREATE);
+        buttonDelete.setToolTipText("Create a new file");
+        buttonDelete.addActionListener(this);
+        buttonDelete.setIcon(iconToolbarProvider.getIcon(JToolbarFisiereIcons.NEW));
+        buttonDelete.setFocusable(false);
+        localToolBar.add(buttonDelete);
 
         localToolBar.setFocusable(false); //nu am nevoie de focus aici
         localToolBar.setFloatable(false); //Daca toolbarul pluteste sau nu
@@ -232,11 +222,9 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
      */
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
+
         if (ACTION_ADD_FOLDER.equals(cmd)) {
             fireActionAddFolder();
-        } else
-        if (ACTION_ADD_FILES.equals(cmd)) {
-            fireActionAddFiles();
         } else
         if (ACTION_ADD_FILE.equals(cmd)) {
             fireActionAddFile();
@@ -256,7 +244,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
         JMyBoolean isOk = new JMyBoolean();
 
         JAddFolderDialog dialog = new JAddFolderDialog(globalManager, "Add folder",
-                true, isOk, true);
+                true, isOk);
         dialog.setVisible(true);
 
         if (isOk.isTrue()) {
@@ -274,19 +262,15 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             }
 
             //Fac actiunea in background cu panou de monitorizare
-            AbstractProgressCallable<Vector<SearchFile>> callable = ExternalLink
+            AbstractProgressCallable callable = ExternalLink
                     .getAddSearchFolderCallable(searchFolderRaw, isTransposon);
-
             JProgressSwingWorker addFolderWorker =
                     new JProgressSwingWorker(globalManager.getTheRootFrame(),
                     "Computing",callable,JProgressPanel.DETERMINATE);
             addFolderWorker.setStandardErrorMessage("Error while searching");
             Vector<SearchFile> newSearchFiles =
                     (Vector<SearchFile>) addFolderWorker.executeTask();
-            if (newSearchFiles == null){
-                System.out.println("newSearchFiles is NULL, cannot continue");
-                return;
-            }
+
             //Actualizez mopdelul tabelului
             Iterator <SearchFile> iteratorNewFiles = newSearchFiles.iterator();
             while (iteratorNewFiles.hasNext()) {
@@ -299,57 +283,6 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             hasChanged = true;
         }
     }
-    /**
-     * Lansez actiunea de adaugare fisiere selectate dintr-un folder
-     */
-    public void fireActionAddFiles() {
-        JMyBoolean isOk = new JMyBoolean();
-
-        JAddFolderDialog dialog = new JAddFolderDialog(globalManager, "Add files from folder",
-                true, isOk, false);
-        dialog.setVisible(true);
-
-        if (isOk.isTrue()) {
-            //Trebuie sa adaug fisierul fizic la locatia standard
-            final SearchFolder searchFolderRaw = dialog.getFolderRaw();
-
-            //TODO adauga fizic fisierul
-            if ((searchFolderRaw.folderLocation == null)) {
-                //custom title, error icon
-                JOptionPane.showMessageDialog(globalManager.getTheRootFrame(),
-                    "Invalid location",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            //Fac actiunea in background cu panou de monitorizare
-            AbstractProgressCallable<Vector<SearchFile>> callable = ExternalLink
-                    .getAddSearchFilesCallable(searchFolderRaw, isTransposon);
-
-            JProgressSwingWorker addFolderWorker =
-                    new JProgressSwingWorker(globalManager.getTheRootFrame(),
-                    "Computing",callable,JProgressPanel.DETERMINATE);
-            addFolderWorker.setStandardErrorMessage("Error while searching selected files");
-            Vector<SearchFile> newSearchFiles =
-                    (Vector<SearchFile>) addFolderWorker.executeTask();
-            if (newSearchFiles == null){
-                System.out.println("newSearchFiles is NULL, cannot continue");
-                return;
-            }
-            //Actualizez mopdelul tabelului
-            Iterator <SearchFile> iteratorNewFiles = newSearchFiles.iterator();
-            while (iteratorNewFiles.hasNext()) {
-                SearchFile searchFile = iteratorNewFiles.next();
-                searchFileSet.add(searchFile);
-            }
-            tableModel.fireTableDataChanged();
-
-            //Notific ca s-a schimbat configuratia fisierului
-            hasChanged = true;
-        }
-    }
-
 
     /**
      * Lansez actiunea de adaugare fisier
@@ -380,7 +313,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             JProgressSwingWorker addFileWorker =
                     new JProgressSwingWorker(globalManager.getTheRootFrame(),
                     "Computing",callable,JProgressPanel.DETERMINATE);
-            addFileWorker.setStandardErrorMessage("Error while adding file");
+            addFileWorker.setStandardErrorMessage("Error while searching");
             addFileWorker.executeTask();
 
             //Actualizez tabelul
@@ -441,7 +374,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             JProgressSwingWorker deleteFilesWorker =
                     new JProgressSwingWorker(globalManager.getTheRootFrame(),
                     "Computing",callable,JProgressPanel.DETERMINATE);
-            deleteFilesWorker.setStandardErrorMessage("Error while deleting file");
+            deleteFilesWorker.setStandardErrorMessage("Error while searching");
             deleteFilesWorker.executeTask();
 
             //Sortez si apoi sterg
@@ -479,7 +412,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             JProgressSwingWorker createFileWorker =
                     new JProgressSwingWorker(globalManager.getTheRootFrame(),
                     "Computing",callable,JProgressPanel.DETERMINATE);
-            createFileWorker.setStandardErrorMessage("Error creating new file");
+            createFileWorker.setStandardErrorMessage("Error while searching");
             SearchFile searchFileRaw = (SearchFile) createFileWorker.executeTask();
 
              //Actualizez modelul tabelului
@@ -501,8 +434,8 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
      */
      public SearchFileSet getSearchFileSet() {
         return searchFileSet;
-    }
-
+    }   
+    
     /**
      * Notific daca s-a schimbat ceva in configuratie
      * @return
@@ -514,7 +447,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
     /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *      Definitia de clase interne
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
+    
     /**
      * Ascultator pentru modificarea celulelor din tabel
      */
@@ -535,7 +468,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
      */
     private class MyTableModel extends AbstractColoredTableModel {
         private SearchFileSet dataProvider;
-
+        
         public MyTableModel(SearchFileSet dataProvider) {
             this.dataProvider = dataProvider;
         }
@@ -596,12 +529,7 @@ public class JSearchFilesPane extends JPanel implements ActionListener {
             case 1:
                 return searchFile.rawLocation.getPath();
             case 2:
-                if (searchFile.geneLocation != null){
-                    return searchFile.geneLocation.getPath();
-                }
-                else {
-                    return "";
-                }
+                return searchFile.geneLocation.getPath();
             default:
                 assert false;
             }

@@ -29,7 +29,7 @@ public class SearchFolder implements Comparable {
     public File folderLocation;
     public String fileTitle;
     public boolean isTransposon;
-    public File[] selectedFiles;
+
     /**
      * Metoda de a compara dou obiecte de acest tip
      * @param o

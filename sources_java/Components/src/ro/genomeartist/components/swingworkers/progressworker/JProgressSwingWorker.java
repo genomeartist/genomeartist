@@ -59,7 +59,6 @@ public class JProgressSwingWorker<T> extends SwingWorker<T, String>
     //Option to display a standard error no mather what
     private Vector<String> errorVector;
     private String standardError = null;
-    private String workerDescription = "";
     
     
 
@@ -146,7 +145,6 @@ public class JProgressSwingWorker<T> extends SwingWorker<T, String>
         
         //Configurez vectorul de erori
         errorVector = new Vector<String>();
-        workerDescription = description;
     }
 
     /**
@@ -211,7 +209,7 @@ public class JProgressSwingWorker<T> extends SwingWorker<T, String>
 
             //Log the error
             Logger.getLogger(JProgressSwingWorker.class.getName()).log(Level.WARNING, 
-                    "Exceptie la rulare Worker " + workerDescription+":" + ex.toString());
+                    "Exceptie la rulare Worker", ex);
             
             //Build a error message
             StringBuilder error = new StringBuilder();

@@ -18,15 +18,9 @@
 
 #include "../../headere/comun.h"
 
-int main(int argc,char *args[])
+int main()
 {
 	#ifndef _WIN32
-		char * nume_memorie;
-		memset(nume_memorie, 0, sizeof(NUME_MEMORIE_PARTAJATA)+sizeof(args[1]));
-
-		sprintf(nume_memorie,"%s_%s",NUME_MEMORIE_PARTAJATA,args[1]);
-		printf("CLEANER: NUME_MEMORIE_PARTAJATA este %s", nume_memorie);
-
 		shm_unlink(NUME_MEMORIE_PARTAJATA);
 		shm_unlink(NUME_MEMORIE_PARTAJATA_POZITIONARE);
 	#else

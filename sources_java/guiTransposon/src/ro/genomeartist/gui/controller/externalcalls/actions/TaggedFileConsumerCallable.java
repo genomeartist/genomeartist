@@ -23,7 +23,6 @@ import ro.genomeartist.components.swingworkers.progressworker.AbstractProgressCa
 import ro.genomeartist.components.utils.NumberUtils;
 import ro.genomeartist.gui.utils.StringUtils;
 import java.io.BufferedReader;
-import java.io.File;
 import java.util.regex.Pattern;
 
 /**
@@ -59,19 +58,6 @@ public class TaggedFileConsumerCallable extends AbstractProgressCallable<Boolean
      * @throws Exception
      */
     public Boolean call() throws Exception {
-                
-        String saveOutputToFile = System.getenv("FILEOUTPUT");
-
-        try {
-            Integer toSave=Integer.parseInt(saveOutputToFile);
-            if (toSave == 1)
-            {
-                return Boolean.TRUE;
-            }
-        }
-        catch (Exception e) {
-        }
-
         String line;
         while ((line = br.readLine()) != null) {
             if (line.startsWith(stopWord))
